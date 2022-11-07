@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 using InputDevice = UnityEngine.XR.InputDevice;
 using VRButton = UnityEngine.XR.CommonUsages;
@@ -35,26 +34,11 @@ public class ControllerManager : MonoBehaviour
 
     private void Update()
     {
-        if(leftInput.GetControllerHeld(VRButton.grip, out float test) && test > 0)
-        {
-
-        }
-
-
         DrawLine(rightLineRenderer, rightController, leftController);
         DrawLine(leftLineRenderer, leftController, rightController);
     }
 
     public void DrawLine(LineRenderer renderer, ControllerInitializer controller, ControllerInitializer other) {}
-
-    public void OnMove(InputAction.CallbackContext context)
-    {
-        return;
-//        movement = context.ReadValue<Vector2>();
-    }
-
-    public void Grab(ControllerInitializer active, ControllerInitializer other) {}
-    public void Drop(ControllerInitializer active) {}
 }
 
 public static class ControllerExtensions
