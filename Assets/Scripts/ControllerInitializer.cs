@@ -5,32 +5,28 @@ public class ControllerInitializer : MonoBehaviour
     [SerializeField] GameObject Oculus_Quest_Rift_S_Controller;
     [SerializeField] GameObject Oculus_Quest2_Controller;
     [SerializeField] GameObject default_Controller;
-
-    public MeshRenderer grabRenderer;
     
-    [HideInInspector] public GameObject controllerPrefab;
-    public GameObject heldObject;
-
+    [HideInInspector] public GameObject controllerObject;
     
     private void Start()
     {
         switch (OVRPlugin.GetSystemHeadsetType())
         {
             case OVRPlugin.SystemHeadset.Oculus_Quest_2:
-                controllerPrefab = Oculus_Quest2_Controller;
+                controllerObject = Oculus_Quest2_Controller;
                 
                 break;
             case OVRPlugin.SystemHeadset.Oculus_Quest:
             case OVRPlugin.SystemHeadset.Rift_S:
-                controllerPrefab = Oculus_Quest_Rift_S_Controller;
+                controllerObject = Oculus_Quest_Rift_S_Controller;
 
                 break;
             default:
-                controllerPrefab = default_Controller;
+                controllerObject = default_Controller;
 
                 break;
         }
 
-        controllerPrefab.SetActive(true);
+        controllerObject.SetActive(true);
     }
 }

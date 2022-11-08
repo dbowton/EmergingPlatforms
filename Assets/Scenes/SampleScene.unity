@@ -135,7 +135,7 @@ PrefabInstance:
     - target: {fileID: 4196952172631576580, guid: a8a25e333c897c342803f6bb6a33e604,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4196952172631576580, guid: a8a25e333c897c342803f6bb6a33e604,
         type: 3}
@@ -192,16 +192,7 @@ PrefabInstance:
       propertyPath: m_Name
       value: XRRig
       objectReference: {fileID: 0}
-    - target: {fileID: 4196952172631576590, guid: a8a25e333c897c342803f6bb6a33e604,
-        type: 3}
-      propertyPath: m_audioClip
-      value: 
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 4196952172631576576, guid: a8a25e333c897c342803f6bb6a33e604, type: 3}
-    - {fileID: 4196952172631576591, guid: a8a25e333c897c342803f6bb6a33e604, type: 3}
-    - {fileID: 4196952172631576579, guid: a8a25e333c897c342803f6bb6a33e604, type: 3}
-    - {fileID: 4196952172631576590, guid: a8a25e333c897c342803f6bb6a33e604, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a8a25e333c897c342803f6bb6a33e604, type: 3}
 --- !u!1 &599916901
 GameObject:
@@ -299,7 +290,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
