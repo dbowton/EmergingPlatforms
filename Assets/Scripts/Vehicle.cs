@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-using InputDevice = UnityEngine.XR.InputDevice;
 using VRButton = UnityEngine.XR.CommonUsages;
 
 public class Vehicle : MonoBehaviour
@@ -21,7 +20,10 @@ public class Vehicle : MonoBehaviour
     bool readyForNewGear = true;
     bool readyForNewRadio = true;
 
-    public int currentGear = 0;
+    public int targetGear = 0;
+    private float currentGear = 0;
+    private float gearPenaltyMulti = 1;
+
     float turnAmount = 0;
     float maxTurn = 10f;
 
@@ -83,15 +85,29 @@ public class Vehicle : MonoBehaviour
                                 if (rightAxis.y > 0.9f)
                                 {
                                     //  upShift
-                                    int newGear = Mathf.Min(currentGear + 1, 7);
-                                    if (newGear != currentGear)
+                                    int newGear = Mathf.Min(targetGear + 1, 7);
+                                    if (newGear != targetGear)
                                     {
-                                        currentGear = newGear;
+                                        targetGear = newGear;
 
-                                        ControllerManager.rightInput.SendHaptic(0.6f, 0.2f);
-                                        ControllerManager.leftInput.SendHaptic(0.6f, 0.2f);
+                                        float gearDif = Mathf.Abs(currentGear - targetGear);
 
-                                        UpdateGearUI();
+                                        if(gearDif <= 1)
+                                        {
+                                            ControllerManager.rightInput.SendHaptic(0.6f, 0.2f);
+                                            ControllerManager.leftInput.SendHaptic(0.6f, 0.2f);
+                                        }
+                                        else if (gearDif <= 1.5f)
+                                        {
+                                            ControllerManager.rightInput.SendHaptic(0.8f, 0.3f);
+                                            ControllerManager.leftInput.SendHaptic(0.8f, 0.3f);
+                                        }
+                                        else
+                                        {
+                                            ControllerManager.rightInput.SendHaptic(1f, 0.5f);
+                                            ControllerManager.leftInput.SendHaptic(1f, 0.5f);
+                                        }
+
                                         ControllerManager.rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
                                         readyForNewGear = false;
                                     }
@@ -99,15 +115,29 @@ public class Vehicle : MonoBehaviour
                                 else if (rightAxis.y < -0.9f)
                                 {
                                     //  downShift
-                                    int newGear = Mathf.Max(currentGear - 1, -1);
-                                    if (newGear != currentGear)
+                                    int newGear = Mathf.Max(targetGear - 1, -1);
+                                    if (newGear != targetGear)
                                     {
-                                        currentGear = newGear;
+                                        targetGear = newGear;
 
-                                        ControllerManager.rightInput.SendHaptic(0.25f, 0.1f);
-                                        ControllerManager.leftInput.SendHaptic(0.25f, 0.1f);
+                                        float gearDif = Mathf.Abs(currentGear - targetGear);
 
-                                        UpdateGearUI();
+                                        if (gearDif <= 1)
+                                        {
+                                            ControllerManager.rightInput.SendHaptic(0.25f, 0.1f);
+                                            ControllerManager.leftInput.SendHaptic(0.25f, 0.1f);
+                                        }
+                                        else if (gearDif <= 1.5f)
+                                        {
+                                            ControllerManager.rightInput.SendHaptic(0.4f, 0.2f);
+                                            ControllerManager.leftInput.SendHaptic(0.4f, 0.2f);
+                                        }
+                                        else
+                                        {
+                                            ControllerManager.rightInput.SendHaptic(0.65f, 0.4f);
+                                            ControllerManager.leftInput.SendHaptic(0.65f, 0.4f);
+                                        }
+
                                         ControllerManager.rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
                                         readyForNewGear = false;
                                     }
@@ -227,12 +257,18 @@ public class Vehicle : MonoBehaviour
             }
         }
 
+        if (Mathf.Abs(currentGear - targetGear) < 0.05f)
+            currentGear = targetGear;
+        else
+            currentGear = Mathf.Lerp(currentGear, targetGear, 0.08f);
+        
+        UpdateGearUI();
 
         Vector3 rot = steeringWheel.transform.localEulerAngles;
         if (rot.z > 180) rot.z -= 360;
         rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * 18, 0.8f);
         steeringWheel.transform.localEulerAngles = rot;
-        float speed = 5f * currentGear;
+        float speed = 5f * currentGear * gearPenaltyMulti;
         transform.position += Time.deltaTime * speed * transform.forward;
         transform.Rotate(transform.up, turnAmount * speed);
     }
@@ -249,18 +285,17 @@ public class Vehicle : MonoBehaviour
         UpdateGearUI();
     }
 
-
     private void UpdateGearUI()
     {
-        string gearText = currentGear.ToString();
+        string gearText = targetGear.ToString();
         Color textColor = Color.white;
 
-        if (currentGear == 0)
+        if (targetGear == 0)
         {
             gearText = "N";
             textColor = Color.yellow;
         }
-        else if (currentGear == -1)
+        else if (targetGear == -1)
         {
             gearText = "R";
             textColor = Color.red;
@@ -269,7 +304,7 @@ public class Vehicle : MonoBehaviour
         GearUI.text = gearText;
         GearUI.color = textColor;
 
-        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * 60 * 60 * 10) / 100f).ToString();
+        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * 60 * 60 * 10) / 100f).ToString();
     }
     private void UpdateRadioUI()
     {

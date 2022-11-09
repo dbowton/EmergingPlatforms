@@ -77,7 +77,7 @@ public class ControllerManager : MonoBehaviour
                 {
                     if (car)
                     {
-                        if (car.currentGear == 0)
+                        if (car.targetGear == 0)
                         {
                             //  leave vehicle
                             car.Leave();
