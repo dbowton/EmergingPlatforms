@@ -36,6 +36,7 @@ public class ControllerManager : MonoBehaviour
     private List<GameObject> leftGameObjects = new List<GameObject>();
     private List<GameObject> rightGameObjects = new List<GameObject>();
 
+    [SerializeField] GameObject steeringWheel;
 
     int currentGear = 0;
     float turnAmount = 0;
@@ -184,6 +185,10 @@ public class ControllerManager : MonoBehaviour
 
         if(inCar)
         {
+            Vector3 rot = steeringWheel.transform.localEulerAngles;
+            if (rot.z > 180) rot.z -= 360;
+            rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * 18, 0.8f);
+            steeringWheel.transform.localEulerAngles = rot;
             float speed = 5f * currentGear;
             transform.parent.position += Time.deltaTime * speed * transform.parent.forward;
             transform.parent.Rotate(transform.up, turnAmount * speed);
