@@ -9,7 +9,8 @@ public class GrabPoint : MonoBehaviour
     { 
         Brake,
         Steering,
-        GearShift
+        GearShift,
+        Radio
     }
 
     public Vector3 defaultLocation;

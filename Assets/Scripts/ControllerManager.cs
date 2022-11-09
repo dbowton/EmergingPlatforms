@@ -35,6 +35,7 @@ public class ControllerManager : MonoBehaviour
     [SerializeField] GameObject steeringWheel;
 
     bool readyForNewGear = true;
+    bool readyForNewRadio = true;
 
     int currentGear = 0;
     float turnAmount = 0;
@@ -46,6 +47,9 @@ public class ControllerManager : MonoBehaviour
     [SerializeField] TMPro.TMP_Text SpeedUI;
 
     bool inCar = false;
+    [SerializeField] AudioSource radio;
+    [SerializeField] List<AudioClip> songs = new List<AudioClip>();
+    int songIndex = 0;
 
     private void Update()
     {
@@ -55,7 +59,7 @@ public class ControllerManager : MonoBehaviour
             {
                 if (rightController.HeldObject == null)
                 {
-                    List<Collider> grabbableObjects = Physics.OverlapSphere(RightHandPos, 0.125f).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) && x.gameObject != leftController.HeldObject).ToList();
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(RightHandPos, 0.125f).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) || grabPoint.grabType.Equals(GrabPoint.GrabType.Radio)) && x.gameObject != leftController.HeldObject).ToList();
 
                     if(grabbableObjects.Count > 0)
                     {
@@ -65,8 +69,10 @@ public class ControllerManager : MonoBehaviour
                 }
                 else
                 {
-                    if(rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 rightAxis))
+                    if(rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.GearShift))
                     {
+                        if(rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 rightAxis))
+                        {
                         if (!readyForNewGear && rightAxis.sqrMagnitude == 0) readyForNewGear = true;
                         else if(readyForNewGear)
                         {
@@ -104,6 +110,67 @@ public class ControllerManager : MonoBehaviour
                             }
                         }
                     }
+                    }
+                    else if(rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.Radio))
+                    {
+                        bool noInput = true;
+                        if (readyForNewRadio && rightInput.GetControllerPressed(VRButton.primary2DAxisClick, out bool clicked))
+                        {
+                            if(clicked)
+                            {
+                                noInput = false;
+                                if(radio.isPlaying)
+                                {
+                                    radio.Pause();
+                                    readyForNewRadio = false;
+                                }
+                                else
+                                {
+                                    radio.UnPause();
+                                    readyForNewRadio = false;
+                                }
+                            }
+                        }
+                        if (rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 rightAxis))
+                        {
+                            if (noInput && !readyForNewRadio && rightAxis.sqrMagnitude == 0) readyForNewRadio = true;
+                            else if(readyForNewRadio)
+                            {
+                                if(rightAxis.y > 0.9f)
+                                {
+                                    //  volume up
+                                    radio.volume = Mathf.Min(1, radio.volume + 0.05f);
+                                    readyForNewRadio = false;
+                                }
+                                else if(rightAxis.y < -0.9f)
+                                {
+                                    //  volume down
+                                    radio.volume = Mathf.Max(0, radio.volume - 0.05f);
+                                    readyForNewRadio = false;
+                                }
+                                else if(rightAxis.x > 0.9f)
+                                {
+                                    //  nextSong
+                                    songIndex++;
+                                    if (songIndex >= songs.Count) songIndex = 0;
+                                    radio.Stop();
+                                    radio.clip = songs[songIndex];
+                                    radio.Play();
+                                    readyForNewRadio = false;
+                                }
+                                else if(rightAxis.x < -0.9f)
+                                {
+                                    //  prevSong
+                                    songIndex--;
+                                    if (songIndex < 0) songIndex = songs.Count - 1;
+                                    radio.Stop();
+                                    radio.clip = songs[songIndex];
+                                    radio.Play();
+                                    readyForNewRadio = false;
+                                }
+                            }
+                        }
+                    }
                 }
             }
             else
@@ -112,6 +179,7 @@ public class ControllerManager : MonoBehaviour
                 readyForNewGear = true;
             }
         }
+        //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
         if(inCar && leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGrabbed))
         {
             if (leftGrabbed)
