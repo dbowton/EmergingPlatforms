@@ -31,7 +31,10 @@ public class ControllerManager : MonoBehaviour
         rightInput = rightHandedControllers[0];
 
         if(songs.Count > 0)
-            radio.clip = songs[0];
+        {
+            foreach(var speaker in radioSpeakers)
+               speaker.clip = songs[0];
+        }
 
         UpdateGearUI();
         UpdateRadioUI();
@@ -54,9 +57,7 @@ public class ControllerManager : MonoBehaviour
     [SerializeField] TMPro.TMP_Text SpeedUI;
 
     bool inCar = false;
-    [SerializeField] AudioSource radio;
-
-
+    [SerializeField] List<AudioSource> radioSpeakers;
 
     [SerializeField] List<AudioClip> songs = new List<AudioClip>();
     int songIndex = 0;
@@ -138,14 +139,19 @@ public class ControllerManager : MonoBehaviour
                                 if(rightAxis.y > 0.9f)
                                 {
                                     //  volume up
-                                    radio.volume = Mathf.Min(1, radio.volume + volumeChange);
+                                    foreach (var speaker in radioSpeakers)
+                                    {
+                                        speaker.volume = Mathf.Min(1, (Mathf.Round(speaker.volume * 10) / 10f) + volumeChange);
+
+                                    }
                                     readyForNewRadio = false;
                                     UpdateRadioUI();
                                 }
                                 else if(rightAxis.y < -0.9f)
                                 {
                                     //  volume down
-                                    radio.volume = Mathf.Max(0, radio.volume - volumeChange);
+                                    foreach (var speaker in radioSpeakers)
+                                        speaker.volume = Mathf.Max(0, (Mathf.Round(speaker.volume * 10) / 10f) - volumeChange);
                                     readyForNewRadio = false;
                                     UpdateRadioUI();
                                 }
@@ -154,9 +160,13 @@ public class ControllerManager : MonoBehaviour
                                     //  nextSong
                                     songIndex++;
                                     if (songIndex >= songs.Count) songIndex = 0;
-                                    radio.Stop();
-                                    radio.clip = songs[songIndex];
-                                    radio.Play();
+
+                                    foreach (var speaker in radioSpeakers)
+                                    {
+                                        speaker.Stop();
+                                        speaker.clip = songs[songIndex];
+                                        speaker.Play();
+                                    }
                                     readyForNewRadio = false;
                                     UpdateRadioUI();
                                 }
@@ -165,9 +175,14 @@ public class ControllerManager : MonoBehaviour
                                     //  prevSong
                                     songIndex--;
                                     if (songIndex < 0) songIndex = songs.Count - 1;
-                                    radio.Stop();
-                                    radio.clip = songs[songIndex];
-                                    radio.Play();
+
+                                    foreach (var speaker in radioSpeakers)
+                                    {
+                                        speaker.Stop();
+                                        speaker.clip = songs[songIndex];
+                                        speaker.Play();
+                                    }
+
                                     readyForNewRadio = false;
                                     UpdateRadioUI();
                                 }
@@ -271,6 +286,8 @@ public class ControllerManager : MonoBehaviour
 
         GearUI.text = gearText;
         GearUI.color = textColor;
+
+        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * 60 * 60 * 10) / 100f).ToString();
     }
 
     [SerializeField] TMPro.TMP_Text radioName;
@@ -280,22 +297,22 @@ public class ControllerManager : MonoBehaviour
     {
         radioName.text = songs[songIndex].name;
 
-        string volumeText = (radio.volume * 100) + "%";
+        string volumeText = (radioSpeakers[0].volume * 100) + "%";
 
         Color volumeColor;
-        if (radio.volume == 0) volumeColor = Color.black;
+        if (radioSpeakers[0].volume == 0) volumeColor = Color.black;
         else
         {
             Color minColor = Color.red;
             Color maxColor = Color.white;
 
-            minColor *= 1 - radio.volume;
-            maxColor *= radio.volume;
+            minColor *= 1 - radioSpeakers[0].volume;
+            maxColor *= radioSpeakers[0].volume;
 
             volumeColor = minColor + maxColor;
         }
 
-        radioName.color = (radio.volume == 0) ? Color.black : Color.white;
+        radioName.color = (radioSpeakers[0].volume == 0) ? Color.black : Color.white;
 
         volumeLevel.text = volumeText;
         volumeLevel.color = volumeColor;
