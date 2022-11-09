@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -55,15 +56,22 @@ public class ControllerManager : MonoBehaviour
     [SerializeField] List<AudioClip> songs = new List<AudioClip>();
     int songIndex = 0;
 
+    private float grabRange = 0.0625f;
+
+    [SerializeField] TMPro.TMP_Text clock;
+
+
     private void Update()
     {
+        clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute;
+
         if(inCar && rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
         {
             if(rightGrab)
             {
                 if (rightController.HeldObject == null)
                 {
-                    List<Collider> grabbableObjects = Physics.OverlapSphere(RightHandPos, 0.125f).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) || grabPoint.grabType.Equals(GrabPoint.GrabType.Radio)) && x.gameObject != leftController.HeldObject).ToList();
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(RightHandPos, grabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) || grabPoint.grabType.Equals(GrabPoint.GrabType.Radio)) && x.gameObject != leftController.HeldObject).ToList();
 
                     if(grabbableObjects.Count > 0)
                     {
@@ -117,12 +125,13 @@ public class ControllerManager : MonoBehaviour
                     }
                     else if(rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.Radio))
                     {
-                        bool noInput = true;
-                        if (readyForNewRadio && rightInput.GetControllerPressed(VRButton.primary2DAxisClick, out bool clicked))
+                        bool noInput = false;
+                        if (rightInput.GetControllerPressed(VRButton.primary2DAxisClick, out bool clicked))
                         {
-                            if(clicked)
+                            noInput = true;
+
+                            if(readyForNewRadio && clicked)
                             {
-                                noInput = false;
                                 if(radio.isPlaying)
                                 {
                                     radio.Pause();
@@ -201,7 +210,7 @@ public class ControllerManager : MonoBehaviour
             {
                 if (leftController.HeldObject == null)
                 {
-                    List<Collider> grabbableObjects = Physics.OverlapSphere(LeftHandPos, 0.125f).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && grabPoint.grabType.Equals(GrabPoint.GrabType.Steering) && x.gameObject != rightController.HeldObject).ToList();
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(LeftHandPos, grabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && grabPoint.grabType.Equals(GrabPoint.GrabType.Steering) && x.gameObject != rightController.HeldObject).ToList();
 
                     if (grabbableObjects.Count > 0)
                     {
@@ -291,11 +300,16 @@ public class ControllerManager : MonoBehaviour
 
         Color volumeColor;
         if (!radio.isPlaying) volumeColor = Color.black;
-        else if (radio.volume < 0.25f) volumeColor = Color.red;
-        else if (radio.volume < 0.5f) volumeColor = new Color(0.5f, 0.5f, 0);
-        else if (radio.volume < 0.75f) volumeColor = Color.yellow;
-        else if (radio.volume < 1) volumeColor = Color.white;
-        else volumeColor = Color.blue;
+        else
+        {
+            Color minColor = Color.red;
+            Color maxColor = Color.white;
+
+            minColor *= 1 - radio.volume;
+            maxColor *= radio.volume;
+
+            volumeColor = minColor + maxColor;
+        }
 
         radioName.color = (!radio.isPlaying) ? Color.black : Color.white;
 
