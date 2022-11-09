@@ -13,9 +13,6 @@ public class ControllerManager : MonoBehaviour
     public InputDevice leftInput;
     public InputDevice rightInput;
 
-    [SerializeField] LineRenderer leftLineRenderer;
-    [SerializeField] LineRenderer rightLineRenderer;
-
     public Vector3 LeftHandPos { get { return leftController.controllerObject.transform.position; } }
     public Vector3 RightHandPos { get { return rightController.controllerObject.transform.position; } }
 
@@ -31,53 +28,27 @@ public class ControllerManager : MonoBehaviour
 
         leftInput = leftHandedControllers[0];
         rightInput = rightHandedControllers[0];
+
+        UpdateGearUI();
     }
 
-    private List<GameObject> leftGameObjects = new List<GameObject>();
-    private List<GameObject> rightGameObjects = new List<GameObject>();
-
     [SerializeField] GameObject steeringWheel;
+
+    bool readyForNewGear = true;
 
     int currentGear = 0;
     float turnAmount = 0;
     float maxTurn = 10f;
 
     [SerializeField] GameObject car;
-    [SerializeField] GameObject GearUI;
+    
+    [SerializeField] TMPro.TMP_Text GearUI;
+    [SerializeField] TMPro.TMP_Text SpeedUI;
+
     bool inCar = false;
 
     private void Update()
     {
-        switch (currentGear)
-        {
-            case -1:
-                GearUI.GetComponent<Renderer>().material.color = Color.red;
-                break;
-            case 0:
-                GearUI.GetComponent<Renderer>().material.color = Color.white;
-                break;
-            case 1:
-                GearUI.GetComponent<Renderer>().material.color = Color.yellow;
-                break;
-            case 2:
-                GearUI.GetComponent<Renderer>().material.color = Color.green;
-                break;
-            case 3:
-                GearUI.GetComponent<Renderer>().material.color = Color.blue;
-                break;
-            case 4:
-                GearUI.GetComponent<Renderer>().material.color = Color.cyan;
-                break;
-            case 5:
-                GearUI.GetComponent<Renderer>().material.color = Color.grey;
-                break;
-            case 6:
-                GearUI.GetComponent<Renderer>().material.color = Color.magenta;
-                break;
-            default:
-                break;
-        }
-
         if(inCar && rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
         {
             if(rightGrab)
@@ -102,16 +73,34 @@ public class ControllerManager : MonoBehaviour
                             if(rightAxis.y > 0.9f)
                             {
                                 //  upShift
-                                currentGear = Mathf.Min(currentGear + 1, 7);
-                                rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
-                                readyForNewGear = false;
+                                int newGear = Mathf.Min(currentGear + 1, 7);
+                                if(newGear != currentGear)
+                                {
+                                    currentGear = newGear;
+
+                                    rightInput.SendHaptic(0.6f, 0.2f);
+                                    leftInput.SendHaptic(0.6f, 0.2f);
+
+                                    UpdateGearUI();
+                                    rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
+                                    readyForNewGear = false;
+                                }
                             }
                             else if(rightAxis.y < -0.9f)
                             {
                                 //  downShift
-                                currentGear = Mathf.Max(currentGear - 1, -2);
-                                rightController.HeldObject.GetComponent<Renderer>().material.color = Color.red;
-                                readyForNewGear = false;
+                                int newGear = Mathf.Max(currentGear - 1, -1);
+                                if (newGear != currentGear)
+                                {
+                                    currentGear = newGear;
+
+                                    rightInput.SendHaptic(0.25f, 0.1f);
+                                    leftInput.SendHaptic(0.25f, 0.1f);
+
+                                    UpdateGearUI();
+                                    rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
+                                    readyForNewGear = false;
+                                }
                             }
                         }
                     }
@@ -143,17 +132,6 @@ public class ControllerManager : MonoBehaviour
                     float leftDistance = Vector3.Distance(leftController.HeldObject.GetComponent<GrabPoint>().Extreme1.transform.position, LeftHandPos);
                     float rightDistance = Vector3.Distance(leftController.HeldObject.GetComponent<GrabPoint>().Extreme2.transform.position, LeftHandPos);
 
-                    if(rightDistance > leftDistance)
-                    {
-                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme1.GetComponent<Renderer>().material.color = Color.blue;
-                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme2.GetComponent<Renderer>().material.color = Color.red;
-                    }
-                    else
-                    {
-                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme1.GetComponent<Renderer>().material.color = Color.red;
-                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme2.GetComponent<Renderer>().material.color = Color.blue;
-                    }
-
                     float totalDistance = rightDistance - leftDistance;
                     turnAmount = -(maxTurn * totalDistance * Time.deltaTime);
                 }
@@ -161,7 +139,11 @@ public class ControllerManager : MonoBehaviour
             else
             {
                 turnAmount = 0;
-                leftController.HeldObject = null;
+                if (leftController.HeldObject)
+                {
+                    leftController.HeldObject.GetComponent<Renderer>().material.color = Color.white;
+                    leftController.HeldObject = null;
+                }
             }
         }
 
@@ -195,9 +177,26 @@ public class ControllerManager : MonoBehaviour
         }
     }
 
-bool readyForNewGear = true;
-}
+    private void UpdateGearUI()
+    {
+        string gearText = currentGear.ToString();
+        Color textColor = Color.white;
 
+        if(currentGear == 0)
+        {
+            gearText = "N";
+            textColor = Color.yellow;
+        }
+        else if(currentGear == -1)
+        {
+            gearText = "R";
+            textColor = Color.red;
+        }
+
+        GearUI.text = gearText;
+        GearUI.color = textColor;
+    }
+}
 
 
 public static class ControllerExtensions
