@@ -7,7 +7,9 @@ public class ControllerInitializer : MonoBehaviour
     [SerializeField] GameObject default_Controller;
     
     [HideInInspector] public GameObject controllerObject;
-    
+
+    [HideInInspector] public GameObject HeldObject;
+
     private void Start()
     {
         switch (OVRPlugin.GetSystemHeadsetType())

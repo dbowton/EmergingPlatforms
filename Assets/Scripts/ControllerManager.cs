@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 using InputDevice = UnityEngine.XR.InputDevice;
@@ -35,68 +36,148 @@ public class ControllerManager : MonoBehaviour
     private List<GameObject> leftGameObjects = new List<GameObject>();
     private List<GameObject> rightGameObjects = new List<GameObject>();
 
+
+    int currentGear = 0;
+    float turnAmount = 0;
+    float maxTurn = 10f;
+
+    [SerializeField] GameObject car;
+    [SerializeField] GameObject GearUI;
+    bool inCar = false;
+
     private void Update()
     {
-        if(leftInput.GetControllerPressed(VRButton.trigger, out float pressedLeft) && pressedLeft > 0)
+        switch (currentGear)
         {
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.transform.localScale = Vector3.one * 0.25f;
-            go.transform.position = LeftHandPos;
-
-            Color color = Color.white;
-            if (pressedLeft > 0.25) color = Color.yellow;
-            if (pressedLeft > 0.5) color = Color.blue;
-            if (pressedLeft > 0.75) color = Color.green;
-
-            go.GetComponent<Renderer>().material.color = color;
-            leftGameObjects.Add(go);
+            case -1:
+                GearUI.GetComponent<Renderer>().material.color = Color.red;
+                break;
+            case 0:
+                GearUI.GetComponent<Renderer>().material.color = Color.white;
+                break;
+            case 1:
+                GearUI.GetComponent<Renderer>().material.color = Color.yellow;
+                break;
+            case 2:
+                GearUI.GetComponent<Renderer>().material.color = Color.green;
+                break;
+            case 3:
+                GearUI.GetComponent<Renderer>().material.color = Color.blue;
+                break;
+            case 4:
+                GearUI.GetComponent<Renderer>().material.color = Color.cyan;
+                break;
+            case 5:
+                GearUI.GetComponent<Renderer>().material.color = Color.grey;
+                break;
+            case 6:
+                GearUI.GetComponent<Renderer>().material.color = Color.magenta;
+                break;
+            default:
+                break;
         }
-        else if(leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGripPressed) && leftGripPressed)
+
+        if(rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
         {
-            if(leftGameObjects.Count > 0)
+            if(rightGrab)
             {
-                GameObject temp = leftGameObjects[leftGameObjects.Count - 1];
-                leftGameObjects.RemoveAt(leftGameObjects.Count - 1);
-                Destroy(temp);
+                if (rightController.HeldObject == null)
+                {
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(RightHandPos, 0.125f).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) && x.gameObject != leftController.HeldObject).ToList();
+
+                    if(grabbableObjects.Count > 0)
+                    {
+                        grabbableObjects[0].gameObject.GetComponent<Renderer>().material.color = Color.yellow;
+                        rightController.HeldObject = grabbableObjects[0].gameObject;
+                    }
+                }
+            }
+            else if(rightController.HeldObject != null)
+            {
+                if (Vector3.Distance(RightHandPos, rightController.HeldObject.GetComponent<GrabPoint>().Extreme1.transform.position) < Vector3.Distance(RightHandPos, rightController.HeldObject.transform.position))
+                {
+                    currentGear = Mathf.Min(currentGear + 1, 9);
+                    rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
+                }
+                else if (Vector3.Distance(RightHandPos, rightController.HeldObject.GetComponent<GrabPoint>().Extreme2.transform.position) < Vector3.Distance(RightHandPos, rightController.HeldObject.transform.position))
+                {
+                    currentGear = Mathf.Max(currentGear - 1, -1);
+                    rightController.HeldObject.GetComponent<Renderer>().material.color = Color.red;
+                }
+
+                rightController.HeldObject = null;
             }
         }
-        else if (leftGameObjects.Count > 0 && leftInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 stick) && stick.sqrMagnitude > 0)
+
+        if (leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGrabbed))
         {
-            leftGameObjects[leftGameObjects.Count - 1].transform.position += new Vector3(stick.x, 0, stick.y) * Time.deltaTime;
-        }
-
-
-        if (rightInput.GetControllerPressed(VRButton.trigger, out float pressedRight) && pressedRight > 0)
-        {
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            go.transform.localScale = Vector3.one * 0.25f;
-            go.transform.position = RightHandPos;
-
-            Color color = Color.white;
-            if (pressedRight > 0.25) color = Color.yellow;
-            if (pressedRight > 0.5) color = Color.blue;
-            if (pressedRight > 0.75) color = Color.green;
-
-            go.GetComponent<Renderer>().material.color = color;
-
-
-            rightGameObjects.Add(go);
-        }
-        else if (rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGripPressed) && rightGripPressed)
-        {
-            if (rightGameObjects.Count > 0)
+            if (leftGrabbed)
             {
-                GameObject temp = rightGameObjects[rightGameObjects.Count - 1];
-                rightGameObjects.RemoveAt(rightGameObjects.Count - 1);
-                Destroy(temp);
+                if (leftController.HeldObject == null)
+                {
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(LeftHandPos, 0.125f).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && grabPoint.grabType.Equals(GrabPoint.GrabType.Steering) && x.gameObject != rightController.HeldObject).ToList();
+
+                    if (grabbableObjects.Count > 0)
+                    {
+                        grabbableObjects[0].gameObject.GetComponent<Renderer>().material.color = Color.yellow;
+                        leftController.HeldObject = grabbableObjects[0].gameObject;
+                    }
+                }
+                else
+                {
+
+                    float leftDistance = Vector3.Distance(leftController.HeldObject.GetComponent<GrabPoint>().Extreme1.transform.position, LeftHandPos);
+                    float rightDistance = Vector3.Distance(leftController.HeldObject.GetComponent<GrabPoint>().Extreme2.transform.position, LeftHandPos);
+
+                    if(rightDistance > leftDistance)
+                    {
+                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme1.GetComponent<Renderer>().material.color = Color.blue;
+                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme2.GetComponent<Renderer>().material.color = Color.red;
+                    }
+                    else
+                    {
+                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme1.GetComponent<Renderer>().material.color = Color.red;
+                        leftController.HeldObject.GetComponent<GrabPoint>().Extreme2.GetComponent<Renderer>().material.color = Color.blue;
+                    }
+
+                    float totalDistance = rightDistance - leftDistance;
+                    turnAmount = -(maxTurn * totalDistance * Time.deltaTime);
+                }
+            }
+            else
+            {
+                turnAmount = 0;
+                leftController.HeldObject = null;
             }
         }
-        else if (rightGameObjects.Count > 0 && rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 stick) && stick.sqrMagnitude > 0)
+
+        if (!inCar && rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 dir) && dir.sqrMagnitude > 0)
+        {            
+            Vector3 adjusedForward = Camera.main.transform.forward;
+            adjusedForward.y = 0;
+            adjusedForward.Normalize();
+
+            Vector3 adjusedRight = Camera.main.transform.right;
+            adjusedRight.y = 0;
+            adjusedRight.Normalize();
+
+            transform.position += ((((adjusedForward) * (dir.y)) + ((dir.x) * (adjusedRight))) * Time.deltaTime);
+        }
+        if(!inCar && leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGripped) && leftGripped)
         {
-            rightGameObjects[rightGameObjects.Count - 1].transform.position += new Vector3(stick.x, 0, stick.y) * Time.deltaTime;
+            inCar = true;
+            transform.parent = car.transform;
+        }
+
+        if(inCar)
+        {
+            float speed = 5f * currentGear;
+            transform.parent.position += Time.deltaTime * speed * transform.parent.forward;
+            transform.parent.Rotate(transform.up, turnAmount * speed);
         }
     }
 }
+
 
 public static class ControllerExtensions
 {
@@ -113,5 +194,10 @@ public static class ControllerExtensions
     public static bool GetControllerPressed(this InputDevice device, UnityEngine.XR.InputFeatureUsage<Vector2> button, out Vector2 pressed)
     {
         return device.TryGetFeatureValue(button, out pressed);
+    }
+
+    public static bool SendHaptic(this InputDevice device, float intensity, float duration = 1f)
+    {
+        return device.SendHapticImpulse(0, intensity, duration);
     }
 }
