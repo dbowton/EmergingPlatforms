@@ -10,7 +10,8 @@ public class GrabPoint : MonoBehaviour
         Brake,
         Steering,
         GearShift,
-        Radio
+        Radio,
+        VehicleEntry
     }
 
     public Vector3 defaultLocation;
