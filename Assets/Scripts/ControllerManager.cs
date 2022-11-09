@@ -46,6 +46,8 @@ public class ControllerManager : MonoBehaviour
     float turnAmount = 0;
     float maxTurn = 10f;
 
+    float volumeChange = 0.2f;
+
     [SerializeField] GameObject car;
     
     [SerializeField] TMPro.TMP_Text GearUI;
@@ -53,6 +55,9 @@ public class ControllerManager : MonoBehaviour
 
     bool inCar = false;
     [SerializeField] AudioSource radio;
+
+
+
     [SerializeField] List<AudioClip> songs = new List<AudioClip>();
     int songIndex = 0;
 
@@ -125,43 +130,22 @@ public class ControllerManager : MonoBehaviour
                     }
                     else if(rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.Radio))
                     {
-                        bool noInput = false;
-                        if (rightInput.GetControllerPressed(VRButton.primary2DAxisClick, out bool clicked))
-                        {
-                            noInput = true;
-
-                            if(readyForNewRadio && clicked)
-                            {
-                                if(radio.isPlaying)
-                                {
-                                    radio.Pause();
-                                    readyForNewRadio = false;
-                                    UpdateRadioUI();
-                                }
-                                else
-                                {
-                                    radio.UnPause();
-                                    readyForNewRadio = false;
-                                    UpdateRadioUI();
-                                }
-                            }
-                        }
                         if (rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 rightAxis))
                         {
-                            if (noInput && !readyForNewRadio && rightAxis.sqrMagnitude == 0) readyForNewRadio = true;
+                            if (!readyForNewRadio && rightAxis.sqrMagnitude == 0) readyForNewRadio = true;
                             else if(readyForNewRadio)
                             {
                                 if(rightAxis.y > 0.9f)
                                 {
                                     //  volume up
-                                    radio.volume = Mathf.Min(1, radio.volume + 0.25f);
+                                    radio.volume = Mathf.Min(1, radio.volume + volumeChange);
                                     readyForNewRadio = false;
                                     UpdateRadioUI();
                                 }
                                 else if(rightAxis.y < -0.9f)
                                 {
                                     //  volume down
-                                    radio.volume = Mathf.Max(0, radio.volume - 0.25f);
+                                    radio.volume = Mathf.Max(0, radio.volume - volumeChange);
                                     readyForNewRadio = false;
                                     UpdateRadioUI();
                                 }
@@ -299,7 +283,7 @@ public class ControllerManager : MonoBehaviour
         string volumeText = (radio.volume * 100) + "%";
 
         Color volumeColor;
-        if (!radio.isPlaying) volumeColor = Color.black;
+        if (radio.volume == 0) volumeColor = Color.black;
         else
         {
             Color minColor = Color.red;
@@ -311,7 +295,7 @@ public class ControllerManager : MonoBehaviour
             volumeColor = minColor + maxColor;
         }
 
-        radioName.color = (!radio.isPlaying) ? Color.black : Color.white;
+        radioName.color = (radio.volume == 0) ? Color.black : Color.white;
 
         volumeLevel.text = volumeText;
         volumeLevel.color = volumeColor;
