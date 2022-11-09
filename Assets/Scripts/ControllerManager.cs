@@ -185,7 +185,12 @@ public class ControllerManager : MonoBehaviour
             }
             else
             {
-                rightController.HeldObject = null;
+                if(rightController.HeldObject)
+                {
+                    rightController.HeldObject.GetComponent<Renderer>().material.color = Color.white;
+                    rightController.HeldObject = null;
+                }
+
                 readyForNewGear = true;
             }
         }
@@ -285,16 +290,14 @@ public class ControllerManager : MonoBehaviour
         string volumeText = (radio.volume * 100) + "%";
 
         Color volumeColor;
-        if (!radio.isPlaying)
-        {
-            volumeColor = Color.black;
-            radioName.color = volumeColor;
-        }
+        if (!radio.isPlaying) volumeColor = Color.black;
         else if (radio.volume < 0.25f) volumeColor = Color.red;
         else if (radio.volume < 0.5f) volumeColor = new Color(0.5f, 0.5f, 0);
         else if (radio.volume < 0.75f) volumeColor = Color.yellow;
         else if (radio.volume < 1) volumeColor = Color.white;
         else volumeColor = Color.blue;
+
+        radioName.color = (!radio.isPlaying) ? Color.black : Color.white;
 
         volumeLevel.text = volumeText;
         volumeLevel.color = volumeColor;
