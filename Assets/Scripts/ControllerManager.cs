@@ -77,7 +77,7 @@ public class ControllerManager : MonoBehaviour
                 break;
         }
 
-        if(rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
+        if(inCar && rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
         {
             if(rightGrab)
             {
@@ -91,25 +91,38 @@ public class ControllerManager : MonoBehaviour
                         rightController.HeldObject = grabbableObjects[0].gameObject;
                     }
                 }
+                else
+                {
+                    if(rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 rightAxis))
+                    {
+                        if (!readyForNewGear && rightAxis.sqrMagnitude == 0) readyForNewGear = true;
+                        else if(readyForNewGear)
+                        {
+                            if(rightAxis.y > 0.9f)
+                            {
+                                //  upShift
+                                currentGear = Mathf.Min(currentGear + 1, 7);
+                                rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
+                                readyForNewGear = false;
+                            }
+                            else if(rightAxis.y < -0.9f)
+                            {
+                                //  downShift
+                                currentGear = Mathf.Max(currentGear - 1, -2);
+                                rightController.HeldObject.GetComponent<Renderer>().material.color = Color.red;
+                                readyForNewGear = false;
+                            }
+                        }
+                    }
+                }
             }
-            else if(rightController.HeldObject != null)
+            else
             {
-                if (Vector3.Distance(RightHandPos, rightController.HeldObject.GetComponent<GrabPoint>().Extreme1.transform.position) < Vector3.Distance(RightHandPos, rightController.HeldObject.transform.position))
-                {
-                    currentGear = Mathf.Min(currentGear + 1, 9);
-                    rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
-                }
-                else if (Vector3.Distance(RightHandPos, rightController.HeldObject.GetComponent<GrabPoint>().Extreme2.transform.position) < Vector3.Distance(RightHandPos, rightController.HeldObject.transform.position))
-                {
-                    currentGear = Mathf.Max(currentGear - 1, -1);
-                    rightController.HeldObject.GetComponent<Renderer>().material.color = Color.red;
-                }
-
                 rightController.HeldObject = null;
+                readyForNewGear = true;
             }
         }
-
-        if (leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGrabbed))
+        if(inCar && leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGrabbed))
         {
             if (leftGrabbed)
             {
@@ -151,7 +164,7 @@ public class ControllerManager : MonoBehaviour
             }
         }
 
-        if (!inCar && rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 dir) && dir.sqrMagnitude > 0)
+        if(!inCar && rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 dir) && dir.sqrMagnitude > 0)
         {            
             Vector3 adjusedForward = Camera.main.transform.forward;
             adjusedForward.y = 0;
@@ -176,7 +189,10 @@ public class ControllerManager : MonoBehaviour
             transform.parent.Rotate(transform.up, turnAmount * speed);
         }
     }
+
+bool readyForNewGear = true;
 }
+
 
 
 public static class ControllerExtensions
