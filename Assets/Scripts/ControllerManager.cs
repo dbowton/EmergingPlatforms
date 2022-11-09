@@ -29,7 +29,11 @@ public class ControllerManager : MonoBehaviour
         leftInput = leftHandedControllers[0];
         rightInput = rightHandedControllers[0];
 
+        if(songs.Count > 0)
+            radio.clip = songs[0];
+
         UpdateGearUI();
+        UpdateRadioUI();
     }
 
     [SerializeField] GameObject steeringWheel;
@@ -123,11 +127,13 @@ public class ControllerManager : MonoBehaviour
                                 {
                                     radio.Pause();
                                     readyForNewRadio = false;
+                                    UpdateRadioUI();
                                 }
                                 else
                                 {
                                     radio.UnPause();
                                     readyForNewRadio = false;
+                                    UpdateRadioUI();
                                 }
                             }
                         }
@@ -139,14 +145,16 @@ public class ControllerManager : MonoBehaviour
                                 if(rightAxis.y > 0.9f)
                                 {
                                     //  volume up
-                                    radio.volume = Mathf.Min(1, radio.volume + 0.05f);
+                                    radio.volume = Mathf.Min(1, radio.volume + 0.25f);
                                     readyForNewRadio = false;
+                                    UpdateRadioUI();
                                 }
                                 else if(rightAxis.y < -0.9f)
                                 {
                                     //  volume down
-                                    radio.volume = Mathf.Max(0, radio.volume - 0.05f);
+                                    radio.volume = Mathf.Max(0, radio.volume - 0.25f);
                                     readyForNewRadio = false;
+                                    UpdateRadioUI();
                                 }
                                 else if(rightAxis.x > 0.9f)
                                 {
@@ -157,6 +165,7 @@ public class ControllerManager : MonoBehaviour
                                     radio.clip = songs[songIndex];
                                     radio.Play();
                                     readyForNewRadio = false;
+                                    UpdateRadioUI();
                                 }
                                 else if(rightAxis.x < -0.9f)
                                 {
@@ -167,6 +176,7 @@ public class ControllerManager : MonoBehaviour
                                     radio.clip = songs[songIndex];
                                     radio.Play();
                                     readyForNewRadio = false;
+                                    UpdateRadioUI();
                                 }
                             }
                         }
@@ -263,6 +273,31 @@ public class ControllerManager : MonoBehaviour
 
         GearUI.text = gearText;
         GearUI.color = textColor;
+    }
+
+    [SerializeField] TMPro.TMP_Text radioName;
+    [SerializeField] TMPro.TMP_Text volumeLevel;
+
+    private void UpdateRadioUI()
+    {
+        radioName.text = songs[songIndex].name;
+
+        string volumeText = (radio.volume * 100) + "%";
+
+        Color volumeColor;
+        if (!radio.isPlaying)
+        {
+            volumeColor = Color.black;
+            radioName.color = volumeColor;
+        }
+        else if (radio.volume < 0.25f) volumeColor = Color.red;
+        else if (radio.volume < 0.5f) volumeColor = new Color(0.5f, 0.5f, 0);
+        else if (radio.volume < 0.75f) volumeColor = Color.yellow;
+        else if (radio.volume < 1) volumeColor = Color.white;
+        else volumeColor = Color.blue;
+
+        volumeLevel.text = volumeText;
+        volumeLevel.color = volumeColor;
     }
 }
 
