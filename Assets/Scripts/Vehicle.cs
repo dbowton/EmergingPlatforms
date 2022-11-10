@@ -23,6 +23,8 @@ public class Vehicle : MonoBehaviour
     public bool IsStopped { get { return currentGear == 0; } }
     [HideInInspector] public bool isOn = false;
 
+    public float baseSpeed = 5f;
+    
     private int targetGear = 0;
     private float currentGear = 0;
     private float gearPenaltyMulti = 1;
@@ -70,6 +72,9 @@ public class Vehicle : MonoBehaviour
             engineSound.volume = 0.25f;
             engineSound.Play();
         }
+
+
+        controller.velocity = (speed * transform.forward + (Physics.gravity * 0.125f));
     }
 
     public void UpdateVehicle()
@@ -154,7 +159,7 @@ public class Vehicle : MonoBehaviour
                                             ControllerManager.leftInput.SendHaptic(0.65f, 0.4f);
                                         }
 
-                                        ControllerManager.rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
+                                        ControllerManager.rightController.HeldObject.GetComponent<Renderer>().material.color = Color.red;
                                         readyForNewGear = false;
                                     }
                                 }
@@ -288,11 +293,13 @@ public class Vehicle : MonoBehaviour
         if (rot.z > 180) rot.z -= 360;
         rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * 18, 0.8f);
         steeringWheel.transform.localEulerAngles = rot;
-        float speed = 5f * currentGear * gearPenaltyMulti * breakMulti;
-        transform.position += Time.deltaTime * speed * transform.forward;
+        speed = baseSpeed * currentGear * gearPenaltyMulti * breakMulti;
+
         transform.Rotate(transform.up, turnAmount * speed);
     }
 
+    [SerializeField] Rigidbody controller;
+    float speed = 0;
 
     public void TurnOff()
     {

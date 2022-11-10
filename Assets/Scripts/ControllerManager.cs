@@ -42,12 +42,15 @@ public class ControllerManager : MonoBehaviour
     Vehicle car = null;
 
     private static float playerGrabRange = 0.0625f;
+    [SerializeField] CharacterController controller;
 
+    float speed = 100f;
 
     private void Update()
     {
         if(car == null)
         {
+            transform.localEulerAngles = Vector3.up * transform.localEulerAngles.y;
             if (rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 dir) && dir.sqrMagnitude > 0)
             {
                 Vector3 adjusedForward = Camera.main.transform.forward;
@@ -58,8 +61,10 @@ public class ControllerManager : MonoBehaviour
                 adjusedRight.y = 0;
                 adjusedRight.Normalize();
 
-                transform.position += ((((adjusedForward) * (dir.y)) + ((dir.x) * (adjusedRight))) * Time.deltaTime);
+                controller.SimpleMove((((adjusedForward) * (dir.y)) + ((dir.x) * (adjusedRight))) * speed * Time.deltaTime);
             }
+            else
+                controller.SimpleMove(Vector3.down);
         }
         else
             car.UpdateVehicle();
