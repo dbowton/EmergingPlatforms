@@ -20,23 +20,30 @@ public class Vehicle : MonoBehaviour
     bool readyForNewGear = true;
     bool readyForNewRadio = true;
 
-    public int targetGear = 0;
+    public bool IsStopped { get { return currentGear == 0; } }
+    [HideInInspector] public bool isOn = false;
+
+    private int targetGear = 0;
     private float currentGear = 0;
     private float gearPenaltyMulti = 1;
+    private float breakMulti = 1;
 
     float turnAmount = 0;
-    float maxTurn = 10f;
-
-    float volumeChange = 0.2f;
-
-    float vehicleGrabRange = 0.0625f;
-
+    readonly float maxTurn = 10f;
+    readonly float volumeChange = 0.2f;
+    readonly float vehicleGrabRange = 0.0625f;
 
     public List<AudioSource> radioSpeakers;
 
     [SerializeField] List<AudioClip> songs = new List<AudioClip>();
     int songIndex = 0;
 
+    bool engineSoundsQueued = false;
+
+    [SerializeField] AudioSource engineSound;
+    [SerializeField] AudioClip engineStartUpSound;
+    [SerializeField] AudioClip engineIdleSound;
+    [SerializeField] AudioClip engineShutdownSound;
 
     private void Start()
     {
@@ -50,22 +57,31 @@ public class Vehicle : MonoBehaviour
         UpdateRadioUI();
     }
 
-
     private void Update()
     {
         clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute;
+
+        if(engineSoundsQueued && !engineSound.isPlaying)
+        {
+            engineSoundsQueued = false;
+            engineSound.clip = engineIdleSound;
+
+            engineSound.loop = true;
+            engineSound.volume = 0.25f;
+            engineSound.Play();
+        }
     }
 
-
     public void UpdateVehicle()
-    {        
+    {
+        breakMulti = 1;
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
         {
             if (rightGrab)
             {
                 if (ControllerManager.rightController.HeldObject == null)
                 {
-                    List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, vehicleGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) || grabPoint.grabType.Equals(GrabPoint.GrabType.Radio)) && x.gameObject != ControllerManager.leftController.HeldObject).ToList();
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, vehicleGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) || grabPoint.grabType.Equals(GrabPoint.GrabType.Radio) || grabPoint.grabType.Equals(GrabPoint.GrabType.EBrake)) && x.gameObject != ControllerManager.leftController.HeldObject).ToList();
 
                     if (grabbableObjects.Count > 0)
                     {
@@ -208,6 +224,10 @@ public class Vehicle : MonoBehaviour
                             }
                         }
                     }
+                    else if (ControllerManager.rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.EBrake))
+                    {
+                        breakMulti = 0;
+                    }
                 }
             }
             else
@@ -260,7 +280,7 @@ public class Vehicle : MonoBehaviour
         if (Mathf.Abs(currentGear - targetGear) < 0.05f)
             currentGear = targetGear;
         else
-            currentGear = Mathf.Lerp(currentGear, targetGear, 0.08f);
+            currentGear = Mathf.Lerp(currentGear, targetGear, 0.02f);
         
         UpdateGearUI();
 
@@ -268,14 +288,16 @@ public class Vehicle : MonoBehaviour
         if (rot.z > 180) rot.z -= 360;
         rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * 18, 0.8f);
         steeringWheel.transform.localEulerAngles = rot;
-        float speed = 5f * currentGear * gearPenaltyMulti;
+        float speed = 5f * currentGear * gearPenaltyMulti * breakMulti;
         transform.position += Time.deltaTime * speed * transform.forward;
         transform.Rotate(transform.up, turnAmount * speed);
     }
 
 
-    public void Leave()
+    public void TurnOff()
     {
+        isOn = false;
+
         foreach(var speaker in radioSpeakers)
         {
             speaker.volume = 0;
@@ -283,6 +305,36 @@ public class Vehicle : MonoBehaviour
 
         UpdateRadioUI();
         UpdateGearUI();
+
+        clock.color = Color.black;
+        SpeedUI.color = Color.black;
+        GearUI.color = Color.black;
+
+        engineSound.Stop();
+        engineSoundsQueued = false;
+
+        engineSound.clip = engineShutdownSound;
+        engineSound.loop = false;
+        engineSound.volume = 0.5f;
+        engineSound.Play();
+    }
+
+    public void TurnOn()
+    {
+        isOn = true;
+
+        clock.color = Color.white;
+        SpeedUI.color = Color.white;
+        UpdateGearUI();
+        UpdateRadioUI();
+
+        engineSound.Play();
+
+        engineSound.clip = engineStartUpSound;
+        engineSound.loop = false;
+        engineSound.volume = 0.5f;
+        engineSound.Play();
+        engineSoundsQueued = true;
     }
 
     private void UpdateGearUI()
@@ -304,7 +356,7 @@ public class Vehicle : MonoBehaviour
         GearUI.text = gearText;
         GearUI.color = textColor;
 
-        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * 60 * 60 * 10) / 100f).ToString();
+        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * breakMulti * 60 * 60 * 10) / 100f).ToString();
     }
     private void UpdateRadioUI()
     {

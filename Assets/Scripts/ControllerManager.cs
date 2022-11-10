@@ -65,22 +65,22 @@ public class ControllerManager : MonoBehaviour
             car.UpdateVehicle();
 
 
-        if (leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGripped))
+        if (rightInput.GetControllerPressed(VRButton.gripButton, out bool leftGripped))
         {
             if (!canChangeCar && !leftGripped) 
                 canChangeCar = true;
             else if(canChangeCar && leftGripped)
             {
-                List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.LeftHandPos, playerGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleEntry)).ToList();
+                List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, playerGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleEntry) || grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleStart))).ToList();
 
                 if(grabbableObjects.Count > 0)
                 {
                     if (car)
                     {
-                        if (car.targetGear == 0)
+                        if (car.IsStopped && grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleStart))
                         {
                             //  leave vehicle
-                            car.Leave();
+                            car.TurnOff();
                             car = null;
                             transform.parent = null;
                             canChangeCar = false;
@@ -90,11 +90,12 @@ public class ControllerManager : MonoBehaviour
                     {
                         foreach (var grab in grabbableObjects)
                         {
-                            if (grab.gameObject.transform.parent.TryGetComponent<Vehicle>(out Vehicle newVehicle))
+                            if (grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleStart) && grab.gameObject.transform.parent.TryGetComponent<Vehicle>(out Vehicle newVehicle))
                             {
                                 car = newVehicle;
                                 transform.parent = car.transform;
                                 canChangeCar = false;
+                                car.TurnOn();
                                 break;
                             }
                         }

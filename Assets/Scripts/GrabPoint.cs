@@ -7,11 +7,12 @@ public class GrabPoint : MonoBehaviour
 {
     public enum GrabType
     { 
-        Brake,
         Steering,
         GearShift,
         Radio,
-        VehicleEntry
+        VehicleEntry,
+        EBrake,
+        VehicleStart
     }
 
     public Vector3 defaultLocation;
