@@ -47,6 +47,9 @@ public class Vehicle : MonoBehaviour
     [SerializeField] AudioClip engineIdleSound;
     [SerializeField] AudioClip engineShutdownSound;
 
+    [SerializeField] List<WheelCollider> steeringWheels;
+    [SerializeField] List<WheelCollider> drivingWheels;
+
     private void Start()
     {
         if (songs.Count > 0)
@@ -54,6 +57,8 @@ public class Vehicle : MonoBehaviour
             foreach (var speaker in radioSpeakers)
                 speaker.clip = songs[0];
         }
+
+        controller.centerOfMass -= Vector3.up;
 
         UpdateGearUI();
         UpdateRadioUI();
@@ -74,7 +79,13 @@ public class Vehicle : MonoBehaviour
         }
 
 
-        controller.velocity = (speed * transform.forward + (Physics.gravity * 0.125f));
+        foreach (var wheel in drivingWheels)
+            wheel.motorTorque = targetGear * speed;
+
+        foreach (var wheel in steeringWheels)
+            wheel.steerAngle = turnAmount * 90f;
+
+/*        controller.velocity = (speed * transform.forward + (Physics.gravity * 0.125f));*/
     }
 
     public void UpdateVehicle()
@@ -295,7 +306,7 @@ public class Vehicle : MonoBehaviour
         steeringWheel.transform.localEulerAngles = rot;
         speed = baseSpeed * currentGear * gearPenaltyMulti * breakMulti;
 
-        transform.Rotate(transform.up, turnAmount * speed);
+//        transform.Rotate(transform.up, turnAmount * speed);
     }
 
     [SerializeField] Rigidbody controller;
