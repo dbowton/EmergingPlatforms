@@ -78,7 +78,6 @@ public class Vehicle : MonoBehaviour
             engineSound.Play();
         }
 
-
         foreach (var wheel in drivingWheels)
             wheel.motorTorque = targetGear * speed;
 
