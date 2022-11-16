@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Device.Location;
 using System.Linq;
 using UnityEngine;
 
@@ -28,7 +29,6 @@ public class Vehicle : MonoBehaviour
     private int targetGear = 0;
     private float currentGear = 0;
     private float gearPenaltyMulti = 1;
-    private float breakMulti = 1;
 
     float turnAmount = 0;
     readonly float maxTurn = 10f;
@@ -79,17 +79,17 @@ public class Vehicle : MonoBehaviour
         }
 
         foreach (var wheel in drivingWheels)
+        {
             wheel.motorTorque = targetGear * speed;
+            wheel.brakeTorque = (targetGear == 0) ? 500f : 0f;
+        }
 
         foreach (var wheel in steeringWheels)
             wheel.steerAngle = turnAmount * 90f;
-
-/*        controller.velocity = (speed * transform.forward + (Physics.gravity * 0.125f));*/
     }
 
     public void UpdateVehicle()
     {
-        breakMulti = 1;
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
         {
             if (rightGrab)
@@ -241,7 +241,10 @@ public class Vehicle : MonoBehaviour
                     }
                     else if (ControllerManager.rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.EBrake))
                     {
-                        breakMulti = 0;
+                        if (targetGear != 0) ControllerManager.rightInput.SendHaptic(0.1f * Mathf.Abs(targetGear), 0.2f * Mathf.Abs(targetGear));
+                        if (targetGear != 0) ControllerManager.leftInput.SendHaptic(0.1f * Mathf.Abs(targetGear), 0.2f * Mathf.Abs(targetGear));
+
+                        targetGear = 0;
                     }
                 }
             }
@@ -303,7 +306,7 @@ public class Vehicle : MonoBehaviour
         if (rot.z > 180) rot.z -= 360;
         rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * 18, 0.8f);
         steeringWheel.transform.localEulerAngles = rot;
-        speed = baseSpeed * currentGear * gearPenaltyMulti * breakMulti;
+        speed = baseSpeed * currentGear * gearPenaltyMulti;
 
 //        transform.Rotate(transform.up, turnAmount * speed);
     }
@@ -373,7 +376,7 @@ public class Vehicle : MonoBehaviour
         GearUI.text = gearText;
         GearUI.color = textColor;
 
-        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * breakMulti * 60 * 60 * 10) / 100f).ToString();
+        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * 60 * 60 * 10) / 100f).ToString();
     }
     private void UpdateRadioUI()
     {
