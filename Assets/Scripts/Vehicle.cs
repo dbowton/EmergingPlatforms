@@ -9,6 +9,7 @@ using VRButton = UnityEngine.XR.CommonUsages;
 
 public class Vehicle : MonoBehaviour
 {
+    public Transform seatPosition;
     [SerializeField] TMPro.TMP_Text clock;
     [SerializeField] TMPro.TMP_Text radioName;
     [SerializeField] TMPro.TMP_Text volumeLevel;
@@ -17,6 +18,7 @@ public class Vehicle : MonoBehaviour
     [SerializeField] TMPro.TMP_Text SpeedUI;
 
     [SerializeField] GameObject steeringWheel;
+    [SerializeField] Rigidbody controller;
 
     bool readyForNewGear = true;
     bool readyForNewRadio = true;
@@ -25,7 +27,11 @@ public class Vehicle : MonoBehaviour
     [HideInInspector] public bool isOn = false;
 
     public float baseSpeed = 5f;
-    
+    public float turnMulti = 18f;
+
+    float speed = 0;
+
+
     private int targetGear = 0;
     private float currentGear = 0;
     private float gearPenaltyMulti = 1;
@@ -80,16 +86,19 @@ public class Vehicle : MonoBehaviour
 
         foreach (var wheel in drivingWheels)
         {
-            wheel.motorTorque = targetGear * speed;
-            wheel.brakeTorque = (targetGear == 0) ? 500f : 0f;
+            wheel.motorTorque = Mathf.Abs(targetGear) * speed;
+            wheel.brakeTorque = (targetGear == 0) ? ((ebraking) ? 1000f : 250f) : 0f;
         }
 
         foreach (var wheel in steeringWheels)
             wheel.steerAngle = turnAmount * 90f;
     }
 
+    bool ebraking = false;
+
     public void UpdateVehicle()
     {
+        ebraking = false;
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
         {
             if (rightGrab)
@@ -245,6 +254,7 @@ public class Vehicle : MonoBehaviour
                         if (targetGear != 0) ControllerManager.leftInput.SendHaptic(0.1f * Mathf.Abs(targetGear), 0.2f * Mathf.Abs(targetGear));
 
                         targetGear = 0;
+                        ebraking = true;
                     }
                 }
             }
@@ -304,15 +314,10 @@ public class Vehicle : MonoBehaviour
 
         Vector3 rot = steeringWheel.transform.localEulerAngles;
         if (rot.z > 180) rot.z -= 360;
-        rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * 18, 0.8f);
+        rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * turnMulti, 0.8f);
         steeringWheel.transform.localEulerAngles = rot;
-        speed = baseSpeed * currentGear * gearPenaltyMulti;
-
-//        transform.Rotate(transform.up, turnAmount * speed);
+        speed = baseSpeed * currentGear * gearPenaltyMulti * ((currentGear < 0) ? 2 : 1);
     }
-
-    [SerializeField] Rigidbody controller;
-    float speed = 0;
 
     public void TurnOff()
     {

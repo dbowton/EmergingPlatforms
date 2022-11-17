@@ -87,6 +87,7 @@ public class ControllerManager : MonoBehaviour
                             //  leave vehicle
                             car.TurnOff();
                             car = null;
+                            controller.enabled = true;
                             transform.parent = null;
                             canChangeCar = false;
                         }
@@ -99,6 +100,8 @@ public class ControllerManager : MonoBehaviour
                             {
                                 car = newVehicle;
                                 transform.parent = car.transform;
+                                transform.position = car.seatPosition.position;
+                                controller.enabled = false;
                                 canChangeCar = false;
                                 car.TurnOn();
                                 break;
