@@ -72,9 +72,10 @@ public class Vehicle : MonoBehaviour
 
     private void Update()
     {
-        clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute;
+        if(clock)
+            clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute;
 
-        if(engineSoundsQueued && !engineSound.isPlaying)
+        if(engineIdleSound && engineSoundsQueued && !engineSound.isPlaying)
         {
             engineSoundsQueued = false;
             engineSound.clip = engineIdleSound;
@@ -313,11 +314,28 @@ public class Vehicle : MonoBehaviour
         UpdateGearUI();
 
         Vector3 rot = steeringWheel.transform.localEulerAngles;
-        if (rot.z > 180) rot.z -= 360;
-        rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * turnMulti, 0.8f);
+
+        if(Mathf.Abs(steeringRotAxii.x) == 1)
+        {
+            if (rot.x > 180) rot.x -= 360;
+            rot.x = Mathf.Lerp(rot.x, -turnAmount * 90 * turnMulti * steeringRotAxii.x, 0.8f);
+        }
+        else if (Mathf.Abs(steeringRotAxii.y) == 1)
+        {
+            if (rot.y > 180) rot.y -= 360;
+            rot.y = Mathf.Lerp(rot.y, -turnAmount * 90 * turnMulti * steeringRotAxii.y, 0.8f);
+        }
+        else if (Mathf.Abs(steeringRotAxii.z * steeringRotAxii.z) == 1)
+        {
+            if (rot.z > 180) rot.z -= 360;
+            rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * turnMulti, 0.8f);
+        }
+
         steeringWheel.transform.localEulerAngles = rot;
         speed = baseSpeed * currentGear * gearPenaltyMulti * ((currentGear < 0) ? 2 : 1);
     }
+
+    [SerializeField] Vector3 steeringRotAxii;
 
     public void TurnOff()
     {
@@ -331,34 +349,40 @@ public class Vehicle : MonoBehaviour
         UpdateRadioUI();
         UpdateGearUI();
 
-        clock.color = Color.black;
-        SpeedUI.color = Color.black;
-        GearUI.color = Color.black;
+        if(clock) clock.color = Color.black;
+        if(SpeedUI) SpeedUI.color = Color.black;
+        if(GearUI) GearUI.color = Color.black;
 
         engineSound.Stop();
         engineSoundsQueued = false;
 
-        engineSound.clip = engineShutdownSound;
-        engineSound.loop = false;
-        engineSound.volume = 0.5f;
-        engineSound.Play();
+        if (engineShutdownSound)
+        {
+            engineSound.clip = engineShutdownSound;
+            engineSound.loop = false;
+            engineSound.volume = 0.5f;
+            engineSound.Play();
+        }
     }
 
     public void TurnOn()
     {
         isOn = true;
 
-        clock.color = Color.white;
-        SpeedUI.color = Color.white;
+        if(clock) clock.color = Color.white;
+        if(SpeedUI) SpeedUI.color = Color.white;
         UpdateGearUI();
         UpdateRadioUI();
 
         engineSound.Play();
 
-        engineSound.clip = engineStartUpSound;
-        engineSound.loop = false;
-        engineSound.volume = 0.5f;
-        engineSound.Play();
+        if(engineStartUpSound)
+        {
+            engineSound.clip = engineStartUpSound;
+            engineSound.loop = false;
+            engineSound.volume = 0.5f;
+            engineSound.Play();
+        }
         engineSoundsQueued = true;
     }
 
@@ -378,33 +402,35 @@ public class Vehicle : MonoBehaviour
             textColor = Color.red;
         }
 
-        GearUI.text = gearText;
-        GearUI.color = textColor;
+        if(GearUI) GearUI.text = gearText;
+        if (GearUI) GearUI.color = textColor;
 
-        SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * 60 * 60 * 10) / 100f).ToString();
+        if(SpeedUI) SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * 60 * 60 * 10) / 100f).ToString();
     }
     private void UpdateRadioUI()
     {
-        radioName.text = songs[songIndex].name;
+        if(radioName) radioName.text = songs[songIndex].name;
 
-        string volumeText = (radioSpeakers[0].volume * 100) + "%";
-
-        Color volumeColor;
-        if (radioSpeakers[0].volume == 0) volumeColor = Color.black;
-        else
+        if (radioSpeakers.Count > 0)
         {
-            Color minColor = Color.red;
-            Color maxColor = Color.white;
+            string volumeText = (radioSpeakers[0].volume * 100) + "%";
+            Color volumeColor;
+            if (radioSpeakers[0].volume == 0) volumeColor = Color.black;
+            else
+            {
+                Color minColor = Color.red;
+                Color maxColor = Color.white;
 
-            minColor *= 1 - radioSpeakers[0].volume;
-            maxColor *= radioSpeakers[0].volume;
+                minColor *= 1 - radioSpeakers[0].volume;
+                maxColor *= radioSpeakers[0].volume;
 
-            volumeColor = minColor + maxColor;
+                volumeColor = minColor + maxColor;
+            }
+
+            if(radioName) radioName.color = (radioSpeakers[0].volume == 0) ? Color.black : Color.white;
+
+            if(volumeLevel) volumeLevel.text = volumeText;
+            if(volumeLevel) volumeLevel.color = volumeColor;
         }
-
-        radioName.color = (radioSpeakers[0].volume == 0) ? Color.black : Color.white;
-
-        volumeLevel.text = volumeText;
-        volumeLevel.color = volumeColor;
     }
 }
