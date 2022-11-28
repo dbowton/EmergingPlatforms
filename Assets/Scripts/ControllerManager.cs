@@ -51,7 +51,7 @@ public class ControllerManager : MonoBehaviour
         if(car == null)
         {
             transform.localEulerAngles = Vector3.up * transform.localEulerAngles.y;
-            if (rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 dir) && dir.sqrMagnitude > 0)
+            if (leftInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 dir) && dir.sqrMagnitude > 0)
             {
                 Vector3 adjusedForward = Camera.main.transform.forward;
                 adjusedForward.y = 0;
