@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 using InputDevice = UnityEngine.XR.InputDevice;
-using VRButton = UnityEngine.XR.CommonUsages;
 
 public class ControllerManager : MonoBehaviour
 {
@@ -19,8 +17,6 @@ public class ControllerManager : MonoBehaviour
 
     public static Vector3 LeftHandPos { get { return leftController.controllerObject.transform.position; } }
     public static Vector3 RightHandPos { get { return rightController.controllerObject.transform.position; } }
-
-    bool canChangeCar = true;
 
     void Start() 
     {
@@ -39,79 +35,7 @@ public class ControllerManager : MonoBehaviour
         rightInput = rightHandedControllers[0];
     }
 
-    Vehicle car = null;
-
-    private static float playerGrabRange = 0.0625f;
-    [SerializeField] CharacterController controller;
-
-    float speed = 100f;
-
-    private void Update()
-    {
-        if(car == null)
-        {
-            transform.localEulerAngles = Vector3.up * transform.localEulerAngles.y;
-            if (leftInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 dir) && dir.sqrMagnitude > 0)
-            {
-                Vector3 adjusedForward = Camera.main.transform.forward;
-                adjusedForward.y = 0;
-                adjusedForward.Normalize();
-
-                Vector3 adjusedRight = Camera.main.transform.right;
-                adjusedRight.y = 0;
-                adjusedRight.Normalize();
-
-                controller.SimpleMove((((adjusedForward) * (dir.y)) + ((dir.x) * (adjusedRight))) * speed * Time.deltaTime);
-            }
-            else
-                controller.SimpleMove(Vector3.down);
-        }
-        else
-            car.UpdateVehicle();
-
-
-        if (rightInput.GetControllerPressed(VRButton.gripButton, out bool leftGripped))
-        {
-            if (!canChangeCar && !leftGripped) 
-                canChangeCar = true;
-            else if(canChangeCar && leftGripped)
-            {
-                List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, playerGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleEntry) || grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleStart))).ToList();
-
-                if(grabbableObjects.Count > 0)
-                {
-                    if (car)
-                    {
-                        if (car.IsStopped && grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleStart))
-                        {
-                            //  leave vehicle
-                            car.TurnOff();
-                            car = null;
-                            controller.enabled = true;
-                            transform.parent = null;
-                            canChangeCar = false;
-                        }
-                    }
-                    else
-                    {
-                        foreach (var grab in grabbableObjects)
-                        {
-                            if (grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleStart) && grab.gameObject.transform.parent.TryGetComponent<Vehicle>(out Vehicle newVehicle))
-                            {
-                                car = newVehicle;
-                                transform.parent = car.transform;
-                                transform.position = car.seatPosition.position;
-                                controller.enabled = false;
-                                canChangeCar = false;
-                                car.TurnOn();
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    public static float playerGrabRange = 0.0625f;
 }
 
 
