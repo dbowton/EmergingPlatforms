@@ -7,11 +7,32 @@ using VRButton = UnityEngine.XR.CommonUsages;
 
 public class Player : MonoBehaviour
 {
+    [SerializeField] Animator animator;
+
     bool canChangeCar = true;
     Vehicle car = null;
     [SerializeField] CharacterController controller;
 
     [SerializeField] float speed = 100f;
+    [SerializeField] float spawnDistance = 2f;
+
+    private void Start()
+    {
+        /*        ControllerManager.leftController.controllerObject.SetActive(false);
+                ControllerManager.rightController.controllerObject.SetActive(false);*/
+
+        vehicleMenu.text = ".";
+//        vehicleMenu.enabled = false;
+    }
+
+    [SerializeField] List<GameObject> vehicles = new List<GameObject>();
+    int vehicleIndex = 0;
+
+    [SerializeField] TMPro.TMP_Text vehicleMenu;
+
+    bool readyToSwitchIndex = false;
+
+    Vehicle spawnedVehicle;
 
     private void Update()
     {
@@ -28,13 +49,65 @@ public class Player : MonoBehaviour
                 adjusedRight.y = 0;
                 adjusedRight.Normalize();
 
-                controller.SimpleMove(((adjusedForward * dir.y) + (dir.x * adjusedRight)) * speed * Time.deltaTime);
+                controller.SimpleMove(speed * Time.deltaTime * ((adjusedForward * dir.y) + (dir.x * adjusedRight)));
             }
             else
                 controller.SimpleMove(Vector3.down);
+
+            if(vehicleMenu.text.Equals("."))// !vehicleMenu.enabled)
+            {
+                if(ControllerManager.rightInput.GetControllerPressed(VRButton.primaryButton, out bool pressed) && pressed)
+                {
+//                    vehicleMenu.enabled = true;
+                    vehicleMenu.text = "< " + vehicles[vehicleIndex].name + " >";
+                }
+            }
+            else
+            {
+                if (ControllerManager.rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 choice))
+                {
+                    if (!readyToSwitchIndex && Mathf.Abs(choice.x) <= 0.15f)
+                    {
+                        readyToSwitchIndex = true;
+                    }
+                    else if (readyToSwitchIndex && Mathf.Abs(choice.x) > 0.9f)
+                    {
+                        readyToSwitchIndex = false;
+                        if (choice.x > 0.9f) vehicleIndex++;
+                        if (choice.x < -0.9f) vehicleIndex--;
+
+                        if (vehicleIndex < 0) vehicleIndex = vehicles.Count - 1;
+                        if (vehicleIndex >= vehicles.Count) vehicleIndex = 0;
+
+                        vehicleMenu.text = "< " + vehicles[vehicleIndex].name + " >";
+                    }
+                }
+
+                if (ControllerManager.rightInput.GetControllerPressed(VRButton.triggerButton, out bool pressed) && pressed)
+                {
+                    if (spawnedVehicle) Destroy(spawnedVehicle.gameObject);
+
+                    Transform cameraT = Camera.main.transform;
+
+                    Vector3 adjustedForward = cameraT.forward - Vector3.up * cameraT.forward.y;
+                    Vector3 spawnPoint = cameraT.position + adjustedForward * spawnDistance;
+                    Vector3 spawnRot = Vector3.up;
+
+                    if(Physics.Raycast(cameraT.position, adjustedForward, out RaycastHit hitInfo, spawnDistance))
+                    {
+                        spawnPoint = hitInfo.point + Vector3.up * spawnDistance;
+                        spawnRot = hitInfo.normal;
+                    }
+
+                    spawnedVehicle = Instantiate(vehicles[vehicleIndex], spawnPoint, Quaternion.identity).GetComponent<Vehicle>();
+                    spawnedVehicle.gameObject.transform.LookAt(spawnedVehicle.transform.position + (spawnedVehicle.transform.position - transform.position), spawnRot);
+
+                    vehicleMenu.text = ".";
+                }
+            }
         }
         else
-            car.UpdateVehicle();
+            car.UpdateVehicle(this, Time.deltaTime);
 
 
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool leftGripped))
@@ -66,7 +139,7 @@ public class Player : MonoBehaviour
                             if (grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleStart) && grab.gameObject.transform.parent.TryGetComponent<Vehicle>(out Vehicle newVehicle))
                             {
                                 car = newVehicle;
-                                transform.parent = car.transform;
+                                transform.parent = car.seatPosition;
                                 transform.position = car.seatPosition.position;
                                 controller.enabled = false;
                                 canChangeCar = false;

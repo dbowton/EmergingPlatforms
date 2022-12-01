@@ -97,7 +97,9 @@ public class Vehicle : MonoBehaviour
 
     bool ebraking = false;
 
-    public void UpdateVehicle()
+    Vector3 prevPos;
+
+    public void UpdateVehicle(Player player, float dt)
     {
         ebraking = false;
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
@@ -311,7 +313,7 @@ public class Vehicle : MonoBehaviour
         else
             currentGear = Mathf.Lerp(currentGear, targetGear, 0.02f);
         
-        UpdateGearUI();
+        UpdateGearUI(dt);
 
         Vector3 rot = steeringWheel.transform.localEulerAngles;
 
@@ -386,7 +388,7 @@ public class Vehicle : MonoBehaviour
         engineSoundsQueued = true;
     }
 
-    private void UpdateGearUI()
+    private void UpdateGearUI(float dt = 1)
     {
         string gearText = targetGear.ToString();
         Color textColor = Color.white;
@@ -405,8 +407,22 @@ public class Vehicle : MonoBehaviour
         if(GearUI) GearUI.text = gearText;
         if (GearUI) GearUI.color = textColor;
 
-        if(SpeedUI) SpeedUI.text = (Mathf.Round(Time.deltaTime * 5f * Mathf.Abs(currentGear) * gearPenaltyMulti * 60 * 60 * 10) / 100f).ToString();
+        if (SpeedUI)
+        {
+            clockedSpeed.Add((transform.position, dt));
+            if (clockedSpeed.Count > 5) clockedSpeed.RemoveAt(0);
+
+            float newSpeed = Vector3.Distance(clockedSpeed[0].pos, clockedSpeed[clockedSpeed.Count - 1].pos) / clockedSpeed.Sum(x => x.time);
+            newSpeed = Mathf.Lerp(prevSpeed, newSpeed, 0.3f);
+            prevSpeed = newSpeed;
+            SpeedUI.text = (newSpeed * 1.5f).ToString("0.0#");
+        }
     }
+
+    float prevSpeed = 0;
+    List<(Vector3 pos, float time)> clockedSpeed = new List<(Vector3, float)>();
+
+
     private void UpdateRadioUI()
     {
         if(radioName) radioName.text = songs[songIndex].name;
