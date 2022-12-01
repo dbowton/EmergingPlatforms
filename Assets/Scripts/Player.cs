@@ -21,8 +21,8 @@ public class Player : MonoBehaviour
         /*        ControllerManager.leftController.controllerObject.SetActive(false);
                 ControllerManager.rightController.controllerObject.SetActive(false);*/
 
-        vehicleMenu.text = ".";
-//        vehicleMenu.enabled = false;
+        vehicleMenu.enableAutoSizing = true;
+        vehicleMenu.enabled = false;
     }
 
     [SerializeField] List<GameObject> vehicles = new List<GameObject>();
@@ -54,12 +54,12 @@ public class Player : MonoBehaviour
             else
                 controller.SimpleMove(Vector3.down);
 
-            if(vehicleMenu.text.Equals("."))// !vehicleMenu.enabled)
+            if(!vehicleMenu.enabled)
             {
                 if(ControllerManager.rightInput.GetControllerPressed(VRButton.primaryButton, out bool pressed) && pressed)
                 {
-//                    vehicleMenu.enabled = true;
-                    vehicleMenu.text = "< " + vehicles[vehicleIndex].name + " >";
+                    vehicleMenu.enabled = true;
+                    vehicleMenu.text = "< " + vehicles[vehicleIndex].name + " >\n" + (vehicleIndex + 1) + " / " + vehicles.Count;
                 }
             }
             else
@@ -79,7 +79,7 @@ public class Player : MonoBehaviour
                         if (vehicleIndex < 0) vehicleIndex = vehicles.Count - 1;
                         if (vehicleIndex >= vehicles.Count) vehicleIndex = 0;
 
-                        vehicleMenu.text = "< " + vehicles[vehicleIndex].name + " >";
+                        vehicleMenu.text = "< " + vehicles[vehicleIndex].name + " >\n" + (vehicleIndex + 1) + " / " + vehicles.Count;
                     }
                 }
 
@@ -102,7 +102,7 @@ public class Player : MonoBehaviour
                     spawnedVehicle = Instantiate(vehicles[vehicleIndex], spawnPoint, Quaternion.identity).GetComponent<Vehicle>();
                     spawnedVehicle.gameObject.transform.LookAt(spawnedVehicle.transform.position + (spawnedVehicle.transform.position - transform.position), spawnRot);
 
-                    vehicleMenu.text = ".";
+                    vehicleMenu.enabled = false;
                 }
             }
         }

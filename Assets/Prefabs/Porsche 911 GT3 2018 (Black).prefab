@@ -5795,20 +5795,10 @@ MonoBehaviour:
   controller: {fileID: 3129791132182741248}
   isOn: 0
   baseSpeed: 15
-  turnMulti: 25
+  turnMulti: 18
   radioSpeakers:
   - {fileID: 3125606269066421224}
   - {fileID: 3125606268565221306}
-  songs:
-  - {fileID: 8300000, guid: 1f1005abaee71104399969a870ee8db2, type: 3}
-  - {fileID: 8300000, guid: 7a929131551237248b69ffc1dbd82700, type: 3}
-  - {fileID: 8300000, guid: c9e277809b21611409a2ee9d2b04fd51, type: 3}
-  - {fileID: 8300000, guid: 9b22003679547c0438f6cad9273d77d1, type: 3}
-  - {fileID: 8300000, guid: e30bfe5e6787aae40b9dd167a07c4c2e, type: 3}
-  - {fileID: 8300000, guid: aaf8d760e3762dd43a38540928716f43, type: 3}
-  - {fileID: 8300000, guid: 71134422607b4e14f86a0754e30d9d61, type: 3}
-  - {fileID: 8300000, guid: ca24a2957cae3d64bb08d75975f7af36, type: 3}
-  - {fileID: 8300000, guid: 33797826a12635c4abd81e0596148be1, type: 3}
   engineSound: {fileID: 3129791132182741249}
   engineStartUpSound: {fileID: 8300000, guid: e7592d5263d5dd4479bbae0f3c8725e9, type: 3}
   engineIdleSound: {fileID: 8300000, guid: 7121227a3d379b049a7f2ccf5cd6a0b3, type: 3}

@@ -43,7 +43,6 @@ public class Vehicle : MonoBehaviour
 
     public List<AudioSource> radioSpeakers;
 
-    [SerializeField] List<AudioClip> songs = new List<AudioClip>();
     int songIndex = 0;
 
     bool engineSoundsQueued = false;
@@ -58,10 +57,10 @@ public class Vehicle : MonoBehaviour
 
     private void Start()
     {
-        if (songs.Count > 0)
+        if (RadioStation.instance.songs.Count > 0)
         {
             foreach (var speaker in radioSpeakers)
-                speaker.clip = songs[0];
+                speaker.clip = RadioStation.instance.songs[UnityEngine.Random.Range(0, RadioStation.instance.songs.Count)];
         }
 
         controller.centerOfMass -= Vector3.up;
@@ -96,8 +95,6 @@ public class Vehicle : MonoBehaviour
     }
 
     bool ebraking = false;
-
-    Vector3 prevPos;
 
     public void UpdateVehicle(Player player, float dt)
     {
@@ -221,12 +218,12 @@ public class Vehicle : MonoBehaviour
                                 {
                                     //  nextSong
                                     songIndex++;
-                                    if (songIndex >= songs.Count) songIndex = 0;
+                                    if (songIndex >= RadioStation.instance.songs.Count) songIndex = 0;
 
                                     foreach (var speaker in radioSpeakers)
                                     {
                                         speaker.Stop();
-                                        speaker.clip = songs[songIndex];
+                                        speaker.clip = RadioStation.instance.songs[songIndex];
                                         speaker.Play();
                                     }
                                     readyForNewRadio = false;
@@ -236,12 +233,12 @@ public class Vehicle : MonoBehaviour
                                 {
                                     //  prevSong
                                     songIndex--;
-                                    if (songIndex < 0) songIndex = songs.Count - 1;
+                                    if (songIndex < 0) songIndex = RadioStation.instance.songs.Count - 1;
 
                                     foreach (var speaker in radioSpeakers)
                                     {
                                         speaker.Stop();
-                                        speaker.clip = songs[songIndex];
+                                        speaker.clip = RadioStation.instance.songs[songIndex];
                                         speaker.Play();
                                     }
 
@@ -404,6 +401,8 @@ public class Vehicle : MonoBehaviour
             textColor = Color.red;
         }
 
+        if (!isOn) gearText = "";
+
         if(GearUI) GearUI.text = gearText;
         if (GearUI) GearUI.color = textColor;
 
@@ -425,7 +424,7 @@ public class Vehicle : MonoBehaviour
 
     private void UpdateRadioUI()
     {
-        if(radioName) radioName.text = songs[songIndex].name;
+        if(radioName) radioName.text = RadioStation.instance.songs[songIndex].name;
 
         if (radioSpeakers.Count > 0)
         {
