@@ -68,8 +68,9 @@ public class Vehicle : MonoBehaviour
     {
         if (RadioStation.instance.songs.Count > 0)
         {
+            songIndex = UnityEngine.Random.Range(0, RadioStation.instance.songs.Count);
             foreach (var speaker in radioSpeakers)
-                speaker.clip = RadioStation.instance.songs[UnityEngine.Random.Range(0, RadioStation.instance.songs.Count)];
+                speaker.clip = RadioStation.instance.songs[songIndex];
         }
 
         controller.centerOfMass -= Vector3.up;
