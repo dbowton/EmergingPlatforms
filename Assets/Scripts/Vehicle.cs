@@ -1,10 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Device.Location;
 using System.Linq;
 using UnityEngine;
 
+using InputDevice = UnityEngine.XR.InputDevice;
 using VRButton = UnityEngine.XR.CommonUsages;
 
 public class Vehicle : MonoBehaviour
@@ -105,217 +105,8 @@ public class Vehicle : MonoBehaviour
 
     public void UpdateVehicle(float dt)
     {
-        ebraking = false;
-        if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
-        {
-            if (rightGrab)
-            {
-                if (ControllerManager.rightController.HeldObject == null)
-                {
-                    List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, vehicleGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.GearShift) || grabPoint.grabType.Equals(GrabPoint.GrabType.Radio) || grabPoint.grabType.Equals(GrabPoint.GrabType.EBrake)) && x.gameObject != ControllerManager.leftController.HeldObject).ToList();
-
-                    if (grabbableObjects.Count > 0)
-                    {
-                        grabbableObjects[0].gameObject.GetComponent<Renderer>().material.color = Color.yellow;
-                        ControllerManager.rightController.HeldObject = grabbableObjects[0].gameObject;
-                    }
-                }
-                else
-                {
-                    if (ControllerManager.rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.GearShift))
-                    {
-                        if (ControllerManager.rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 rightAxis))
-                        {
-                            if (!readyForNewGear && rightAxis.sqrMagnitude == 0) readyForNewGear = true;
-                            else if (readyForNewGear)
-                            {
-                                if (rightAxis.y > 0.9f)
-                                {
-                                    //  upShift
-                                    int newGear = Mathf.Min(targetGear + 1, 7);
-                                    if (newGear != targetGear)
-                                    {
-                                        targetGear = newGear;
-
-                                        float gearDif = Mathf.Abs(currentGear - targetGear);
-
-                                        if(gearDif <= 1)
-                                        {
-                                            ControllerManager.rightInput.SendHaptic(0.6f, 0.2f);
-                                            ControllerManager.leftInput.SendHaptic(0.6f, 0.2f);
-                                        }
-                                        else if (gearDif <= 1.5f)
-                                        {
-                                            ControllerManager.rightInput.SendHaptic(0.8f, 0.3f);
-                                            ControllerManager.leftInput.SendHaptic(0.8f, 0.3f);
-                                        }
-                                        else
-                                        {
-                                            ControllerManager.rightInput.SendHaptic(1f, 0.5f);
-                                            ControllerManager.leftInput.SendHaptic(1f, 0.5f);
-                                        }
-
-                                        ControllerManager.rightController.HeldObject.GetComponent<Renderer>().material.color = Color.green;
-                                        readyForNewGear = false;
-                                    }
-                                }
-                                else if (rightAxis.y < -0.9f)
-                                {
-                                    //  downShift
-                                    int newGear = Mathf.Max(targetGear - 1, -1);
-                                    if (newGear != targetGear)
-                                    {
-                                        targetGear = newGear;
-
-                                        float gearDif = Mathf.Abs(currentGear - targetGear);
-
-                                        if (gearDif <= 1)
-                                        {
-                                            ControllerManager.rightInput.SendHaptic(0.25f, 0.1f);
-                                            ControllerManager.leftInput.SendHaptic(0.25f, 0.1f);
-                                        }
-                                        else if (gearDif <= 1.5f)
-                                        {
-                                            ControllerManager.rightInput.SendHaptic(0.4f, 0.2f);
-                                            ControllerManager.leftInput.SendHaptic(0.4f, 0.2f);
-                                        }
-                                        else
-                                        {
-                                            ControllerManager.rightInput.SendHaptic(0.65f, 0.4f);
-                                            ControllerManager.leftInput.SendHaptic(0.65f, 0.4f);
-                                        }
-
-                                        ControllerManager.rightController.HeldObject.GetComponent<Renderer>().material.color = Color.red;
-                                        readyForNewGear = false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else if (ControllerManager.rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.Radio))
-                    {
-                        if (ControllerManager.rightInput.GetControllerPressed(VRButton.primary2DAxis, out Vector2 rightAxis))
-                        {
-                            if (!readyForNewRadio && rightAxis.sqrMagnitude == 0) readyForNewRadio = true;
-                            else if (readyForNewRadio)
-                            {
-                                if (rightAxis.y > 0.9f)
-                                {
-                                    //  volume up
-                                    foreach (var speaker in radioSpeakers)
-                                    {
-                                        speaker.volume = Mathf.Min(1, (Mathf.Round(speaker.volume * 10) / 10f) + volumeChange);
-                                        if (!speaker.isPlaying) speaker.Play();
-                                    }
-                                    readyForNewRadio = false;
-                                    UpdateRadioUI();
-                                }
-                                else if (rightAxis.y < -0.9f)
-                                {
-                                    //  volume down
-                                    foreach (var speaker in radioSpeakers)
-                                    {
-                                        speaker.volume = Mathf.Max(0, (Mathf.Round(speaker.volume * 10) / 10f) - volumeChange);
-                                        if (!speaker.isPlaying) speaker.Play();
-                                    }
-                                    readyForNewRadio = false;
-                                    UpdateRadioUI();
-                                }
-                                else if (rightAxis.x > 0.9f)
-                                {
-                                    //  nextSong
-                                    songIndex++;
-                                    if (songIndex >= RadioStation.instance.songs.Count) songIndex = 0;
-
-                                    foreach (var speaker in radioSpeakers)
-                                    {
-                                        speaker.Stop();
-                                        speaker.clip = RadioStation.instance.songs[songIndex];
-                                        speaker.Play();
-                                    }
-                                    readyForNewRadio = false;
-                                    UpdateRadioUI();
-                                }
-                                else if (rightAxis.x < -0.9f)
-                                {
-                                    //  prevSong
-                                    songIndex--;
-                                    if (songIndex < 0) songIndex = RadioStation.instance.songs.Count - 1;
-
-                                    foreach (var speaker in radioSpeakers)
-                                    {
-                                        speaker.Stop();
-                                        speaker.clip = RadioStation.instance.songs[songIndex];
-                                        speaker.Play();
-                                    }
-
-                                    readyForNewRadio = false;
-                                    UpdateRadioUI();
-                                }
-                            }
-                        }
-                    }
-                    else if (ControllerManager.rightController.HeldObject.GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.EBrake))
-                    {
-                        if (targetGear != 0) ControllerManager.rightInput.SendHaptic(0.1f * Mathf.Abs(targetGear), 0.2f * Mathf.Abs(targetGear));
-                        if (targetGear != 0) ControllerManager.leftInput.SendHaptic(0.1f * Mathf.Abs(targetGear), 0.2f * Mathf.Abs(targetGear));
-
-                        targetGear = 0;
-                        ebraking = true;
-                    }
-                }
-            }
-            else
-            {
-                if (ControllerManager.rightController.HeldObject)
-                {
-                    ControllerManager.rightController.HeldObject.GetComponent<Renderer>().material.color = Color.white;
-                    ControllerManager.rightController.HeldObject = null;
-                }
-
-                readyForNewGear = true;
-            }
-        }
-        //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-        if (ControllerManager.leftInput.GetControllerPressed(VRButton.gripButton, out bool leftGrabbed))
-        {
-            if (leftGrabbed)
-            {
-                if (ControllerManager.leftController.HeldObject == null)
-                {
-                    List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.LeftHandPos, vehicleGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && grabPoint.grabType.Equals(GrabPoint.GrabType.Steering) && x.gameObject != ControllerManager.rightController.HeldObject).ToList();
-
-                    if (grabbableObjects.Count > 0)
-                    {
-                        grabbableObjects[0].gameObject.GetComponent<Renderer>().material.color = Color.yellow;
-                        ControllerManager.leftController.HeldObject = grabbableObjects[0].gameObject;
-                    }
-                }
-                else
-                {
-                    Vector3 baseVector = ControllerManager.leftController.HeldObject.transform.position - steeringWheelCenter.position;
-                    Vector3 angledVector = ControllerManager.LeftHandPos - steeringWheelCenter.position;
-
-                    angledVector = steeringWheelCenter.position + Vector3.ProjectOnPlane(angledVector, steeringWheelCenter.up);
-                    turning = Vector3.SignedAngle(baseVector, angledVector - steeringWheelCenter.position, steeringWheelCenter.up) * 0.5f;
-
-
-
-                    Vector3 rot = steeringWheel.transform.localEulerAngles;
-                    steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, rot.y, -turning * 2f);
-                }
-            }
-            else
-            {
-                steeringWheel.transform.localRotation = Quaternion.Euler(defaultSteeringRotation);
-                turning = 0;
-                if (ControllerManager.leftController.HeldObject)
-                {
-                    ControllerManager.leftController.HeldObject.GetComponent<Renderer>().material.color = Color.white;
-                    ControllerManager.leftController.HeldObject = null;
-                }
-            }
-        }
+        UpdateController(ControllerManager.Left, ControllerManager.Right);
+        UpdateController(ControllerManager.Right, ControllerManager.Left);
 
         if (Mathf.Abs(currentGear - targetGear) < 0.05f)
             currentGear = targetGear;
@@ -323,12 +114,246 @@ public class Vehicle : MonoBehaviour
             currentGear = Mathf.Lerp(currentGear, targetGear, 0.02f);
         
         UpdateGearUI(dt);
-
         speed = baseSpeed * currentGear * gearPenaltyMulti * ((currentGear < 0) ? 2 : 1);
     }
 
     [SerializeField] Transform steeringWheelCenter;
     [SerializeField] Vector3 steeringRotAxii;
+
+    private void UpdateController((InputDevice input, ControllerInitializer controller, Vector3 position) current, (InputDevice input, ControllerInitializer controller, Vector3 position) other)
+    {
+        if (current.input.GetControllerPressed(VRButton.gripButton, out bool grabbed))
+        {
+            if(grabbed)
+            {
+                if (current.controller.HeldObject == null)
+                {
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(current.position, vehicleGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (other.controller.HeldObject == null || !grabPoint.grabType.Equals(other.controller.HeldObject.GetComponent<GrabPoint>().grabType))).ToList();
+
+                    if (grabbableObjects.Count > 0)
+                    {
+                        grabbableObjects[0].gameObject.GetComponent<Renderer>().material.color = Color.yellow;
+                        current.controller.HeldObject = grabbableObjects[0].gameObject;
+                    }
+                }
+                else
+                {
+                    //  Grab
+                    switch (current.controller.HeldObject.GetComponent<GrabPoint>().grabType)
+                    {
+                        case GrabPoint.GrabType.Steering:
+                            {
+                                Vector3 baseVector = current.controller.HeldObject.transform.position - steeringWheelCenter.position;
+                                Vector3 angledVector = current.position - steeringWheelCenter.position;
+
+                                angledVector = steeringWheelCenter.position + Vector3.ProjectOnPlane(angledVector, steeringWheelCenter.up);
+                                turning = Vector3.SignedAngle(baseVector, angledVector - steeringWheelCenter.position, steeringWheelCenter.up) * 0.1f;
+
+                                if (turning < 0) turning += 360;
+                                if (turning > maxTurn && turning < 360 - maxTurn)
+                                {
+                                    if (MathF.Abs(turning - maxTurn) < Mathf.Abs(turning - (360 - maxTurn)))
+                                    {
+                                        turning = maxTurn;
+                                    }
+                                    else turning = 360 - maxTurn;
+                                }
+
+                                Vector3 rot = steeringWheel.transform.localEulerAngles;
+                                steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, rot.y, -turning * 10f);
+                            }
+                            break;
+                        case GrabPoint.GrabType.GearShift:
+                            {
+                                if (current.input.GetControllerPressed(VRButton.primary2DAxis, out Vector2 gearAxis))
+                                {
+                                    if (!readyForNewGear && gearAxis.sqrMagnitude == 0) readyForNewGear = true;
+                                    else if (readyForNewGear)
+                                    {
+                                        if (gearAxis.y > 0.9f)
+                                        {
+                                            //  upShift
+                                            int newGear = Mathf.Min(targetGear + 1, 7);
+                                            if (newGear != targetGear)
+                                            {
+                                                targetGear = newGear;
+
+                                                float gearDif = Mathf.Abs(currentGear - targetGear);
+
+                                                if (gearDif <= 1)
+                                                {
+                                                    current.input.SendHaptic(0.6f, 0.2f);
+                                                    other.input.SendHaptic(0.6f, 0.2f);
+                                                }
+                                                else if (gearDif <= 1.5f)
+                                                {
+                                                    current.input.SendHaptic(0.8f, 0.3f);
+                                                    other.input.SendHaptic(0.8f, 0.3f);
+                                                }
+                                                else
+                                                {
+                                                    current.input.SendHaptic(1f, 0.5f);
+                                                    other.input.SendHaptic(1f, 0.5f);
+                                                }
+
+                                                current.controller.HeldObject.GetComponent<Renderer>().material.color = Color.green;
+                                                readyForNewGear = false;
+                                            }
+                                        }
+                                        else if (gearAxis.y < -0.9f)
+                                        {
+                                            //  downShift
+                                            int newGear = Mathf.Max(targetGear - 1, -1);
+                                            if (newGear != targetGear)
+                                            {
+                                                targetGear = newGear;
+
+                                                float gearDif = Mathf.Abs(currentGear - targetGear);
+
+                                                if (gearDif <= 1)
+                                                {
+                                                    current.input.SendHaptic(0.25f, 0.1f);
+                                                    other.input.SendHaptic(0.25f, 0.1f);
+                                                }
+                                                else if (gearDif <= 1.5f)
+                                                {
+                                                    current.input.SendHaptic(0.4f, 0.2f);
+                                                    other.input.SendHaptic(0.4f, 0.2f);
+                                                }
+                                                else
+                                                {
+                                                    current.input.SendHaptic(0.65f, 0.4f);
+                                                    other.input.SendHaptic(0.65f, 0.4f);
+                                                }
+
+                                                current.controller.HeldObject.GetComponent<Renderer>().material.color = Color.red;
+                                                readyForNewGear = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        case GrabPoint.GrabType.Radio:
+                            {
+                                if (current.input.GetControllerPressed(VRButton.primary2DAxis, out Vector2 radioAxis))
+                                {
+                                    if (!readyForNewRadio && radioAxis.sqrMagnitude == 0) readyForNewRadio = true;
+                                    else if (readyForNewRadio)
+                                    {
+                                        if (radioAxis.y > 0.9f)
+                                        {
+                                            //  volume up
+                                            foreach (var speaker in radioSpeakers)
+                                            {
+                                                speaker.volume = Mathf.Min(1, (Mathf.Round(speaker.volume * 10) / 10f) + volumeChange);
+                                                if (!speaker.isPlaying) speaker.Play();
+                                            }
+                                            readyForNewRadio = false;
+                                            UpdateRadioUI();
+                                        }
+                                        else if (radioAxis.y < -0.9f)
+                                        {
+                                            //  volume down
+                                            foreach (var speaker in radioSpeakers)
+                                            {
+                                                speaker.volume = Mathf.Max(0, (Mathf.Round(speaker.volume * 10) / 10f) - volumeChange);
+                                                if (!speaker.isPlaying) speaker.Play();
+                                            }
+                                            readyForNewRadio = false;
+                                            UpdateRadioUI();
+                                        }
+                                        else if (radioAxis.x > 0.9f)
+                                        {
+                                            //  nextSong
+                                            songIndex++;
+                                            if (songIndex >= RadioStation.instance.songs.Count) songIndex = 0;
+
+                                            foreach (var speaker in radioSpeakers)
+                                            {
+                                                speaker.Stop();
+                                                speaker.clip = RadioStation.instance.songs[songIndex];
+                                                speaker.Play();
+                                            }
+                                            readyForNewRadio = false;
+                                            UpdateRadioUI();
+                                        }
+                                        else if (radioAxis.x < -0.9f)
+                                        {
+                                            //  prevSong
+                                            songIndex--;
+                                            if (songIndex < 0) songIndex = RadioStation.instance.songs.Count - 1;
+
+                                            foreach (var speaker in radioSpeakers)
+                                            {
+                                                speaker.Stop();
+                                                speaker.clip = RadioStation.instance.songs[songIndex];
+                                                speaker.Play();
+                                            }
+
+                                            readyForNewRadio = false;
+                                            UpdateRadioUI();
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        case GrabPoint.GrabType.VehicleEntry:
+                            break;
+                        case GrabPoint.GrabType.EBrake:
+                            {
+                                if (targetGear != 0) current.input.SendHaptic(0.1f * Mathf.Abs(targetGear), 0.2f * Mathf.Abs(targetGear));
+                                if (targetGear != 0) other.input.SendHaptic(0.1f * Mathf.Abs(targetGear), 0.2f * Mathf.Abs(targetGear));
+
+                                targetGear = 0;
+                                ebraking = true;
+                            }
+                            break;
+                        case GrabPoint.GrabType.VehicleStart:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                //  release
+                if (current.controller.HeldObject != null)
+                {
+                    switch (current.controller.HeldObject.GetComponent<GrabPoint>().grabType)
+                    {
+                        case GrabPoint.GrabType.Steering:
+                            {
+                                steeringWheel.transform.localRotation = Quaternion.Euler(defaultSteeringRotation);
+                                turning = 0;
+                            }
+                            break;
+                        case GrabPoint.GrabType.GearShift:
+                            readyForNewGear = true;
+                            break;
+                        case GrabPoint.GrabType.Radio:
+                            break;
+                        case GrabPoint.GrabType.VehicleEntry:
+                            break;
+                        case GrabPoint.GrabType.EBrake:
+                            ebraking = false;
+                            break;
+                        case GrabPoint.GrabType.VehicleStart:
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (current.controller.HeldObject)
+                    {
+                        current.controller.HeldObject.GetComponent<Renderer>().material.color = Color.white;
+                        current.controller.HeldObject = null;
+                    }
+                }
+            }
+        }
+    }
 
     public void TurnOff()
     {
@@ -414,7 +439,6 @@ public class Vehicle : MonoBehaviour
 
     float prevSpeed = 0;
     List<(Vector3 pos, float time)> clockedSpeed = new List<(Vector3, float)>();
-
 
     private void UpdateRadioUI()
     {

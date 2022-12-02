@@ -18,6 +18,9 @@ public class ControllerManager : MonoBehaviour
     public static Vector3 LeftHandPos { get { return leftController.controllerObject.transform.position; } }
     public static Vector3 RightHandPos { get { return rightController.controllerObject.transform.position; } }
 
+    public static (InputDevice input, ControllerInitializer controller, Vector3 position) Left { get { return (leftInput, leftController, LeftHandPos); } }
+    public static (InputDevice input, ControllerInitializer controller, Vector3 position) Right { get { return (rightInput, rightController, RightHandPos); } }
+
     void Start() 
     {
         leftController = initLeftController;
