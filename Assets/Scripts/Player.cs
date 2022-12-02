@@ -34,6 +34,7 @@ public class Player : MonoBehaviour
 
     Vehicle spawnedVehicle;
 
+    public float playerGrabRange = 0.0625f;
     private void Update()
     {
         if (car == null)
@@ -116,7 +117,7 @@ public class Player : MonoBehaviour
                 canChangeCar = true;
             else if (canChangeCar && leftGripped)
             {
-                List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, ControllerManager.playerGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleEntry) || grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleStart))).ToList();
+                List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, playerGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleEntry) || grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleStart))).ToList();
 
                 if (grabbableObjects.Count > 0)
                 {

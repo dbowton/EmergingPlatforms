@@ -15,15 +15,5 @@ public class GrabPoint : MonoBehaviour
         VehicleStart
     }
 
-    public Vector3 defaultLocation;
     public GrabType grabType;
-
-    public GameObject Extreme1;
-    public GameObject Extreme2;
-
-
-    private void Start()
-    {
-        defaultLocation = transform.localPosition;
-    }
 }

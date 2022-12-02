@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -37,10 +36,7 @@ public class ControllerManager : MonoBehaviour
         leftInput = leftHandedControllers[0];
         rightInput = rightHandedControllers[0];
     }
-
-    public static float playerGrabRange = 0.0625f;
 }
-
 
 
 

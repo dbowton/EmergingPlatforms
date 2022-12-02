@@ -27,17 +27,15 @@ public class Vehicle : MonoBehaviour
     [HideInInspector] public bool isOn = false;
 
     public float baseSpeed = 5f;
-//    public float turnMulti = 18f;
 
     float speed = 0;
 
     private int targetGear = 0;
     private float currentGear = 0;
-    private float gearPenaltyMulti = 1;
 
     float turning = 0;
 
-    readonly float maxTurn = 40f;
+    readonly float maxTurn = 120f;
     readonly float volumeChange = 0.2f;
     readonly float vehicleGrabRange = 0.0625f;
 
@@ -54,6 +52,17 @@ public class Vehicle : MonoBehaviour
 
     [SerializeField] List<WheelCollider> steeringWheels;
     [SerializeField] List<WheelCollider> drivingWheels;
+
+    Vector3 defaultSteeringRotation;
+    bool ebraking = false;
+    [SerializeField] Transform steeringWheelCenter;
+    [SerializeField] Vector3 steeringRotAxii;
+
+    [SerializeField] float turnMulti = 1 / 4f;
+
+    float prevSpeed = 0;
+    List<(Vector3 pos, float time)> clockedSpeed = new List<(Vector3, float)>();
+
 
     private void Start()
     {
@@ -72,9 +81,6 @@ public class Vehicle : MonoBehaviour
 
     private void Update()
     {
-        if(clock)
-            clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute + "\n" + turning;
-
         if(engineIdleSound && engineSoundsQueued && !engineSound.isPlaying)
         {
             engineSoundsQueued = false;
@@ -84,7 +90,10 @@ public class Vehicle : MonoBehaviour
             engineSound.volume = 0.25f;
             engineSound.Play();
         }
+    }
 
+    private void FixedUpdate()
+    {
         foreach (var wheel in drivingWheels)
         {
             wheel.motorTorque = Mathf.Abs(targetGear) * speed;
@@ -92,33 +101,28 @@ public class Vehicle : MonoBehaviour
         }
 
         foreach (var wheel in steeringWheels)
-            wheel.steerAngle = turning;
+            wheel.steerAngle = turnMulti * ((turning > 180) ? turning - 360 : turning);
     }
-
-    bool ebraking = false;
-
-    Vector3 defaultSteeringRotation;
-
-    [SerializeField] LineRenderer line1;
-    [SerializeField] LineRenderer line2;
-    [SerializeField] LineRenderer line3;
 
     public void UpdateVehicle(float dt)
     {
+        if (clock)
+            clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute;
+
         UpdateController(ControllerManager.Left, ControllerManager.Right);
         UpdateController(ControllerManager.Right, ControllerManager.Left);
 
         if (Mathf.Abs(currentGear - targetGear) < 0.05f)
             currentGear = targetGear;
-        else
-            currentGear = Mathf.Lerp(currentGear, targetGear, 0.02f);
+        else if(currentGear * targetGear <= 0)
+        {
+            currentGear = Mathf.Lerp(currentGear, targetGear, 0.2f);
+        }
+        else currentGear = Mathf.Lerp(currentGear, targetGear, 0.02f);
         
         UpdateGearUI(dt);
-        speed = baseSpeed * currentGear * gearPenaltyMulti * ((currentGear < 0) ? 2 : 1);
+        speed = baseSpeed * currentGear * ((currentGear < 0) ? 4 : 1);
     }
-
-    [SerializeField] Transform steeringWheelCenter;
-    [SerializeField] Vector3 steeringRotAxii;
 
     private void UpdateController((InputDevice input, ControllerInitializer controller, Vector3 position) current, (InputDevice input, ControllerInitializer controller, Vector3 position) other)
     {
@@ -128,7 +132,10 @@ public class Vehicle : MonoBehaviour
             {
                 if (current.controller.HeldObject == null)
                 {
-                    List<Collider> grabbableObjects = Physics.OverlapSphere(current.position, vehicleGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (other.controller.HeldObject == null || !grabPoint.grabType.Equals(other.controller.HeldObject.GetComponent<GrabPoint>().grabType))).ToList();
+                    List<Collider> grabbableObjects = Physics.OverlapSphere(current.position, vehicleGrabRange)
+                        .Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && 
+                            (other.controller.HeldObject == null || !grabPoint.grabType.Equals(other.controller.HeldObject.GetComponent<GrabPoint>().grabType)))
+                        .OrderBy(x => Vector3.Distance(current.position, x.transform.position)).ToList();
 
                     if (grabbableObjects.Count > 0)
                     {
@@ -147,7 +154,7 @@ public class Vehicle : MonoBehaviour
                                 Vector3 angledVector = current.position - steeringWheelCenter.position;
 
                                 angledVector = steeringWheelCenter.position + Vector3.ProjectOnPlane(angledVector, steeringWheelCenter.up);
-                                turning = Vector3.SignedAngle(baseVector, angledVector - steeringWheelCenter.position, steeringWheelCenter.up) * 0.1f;
+                                turning = Vector3.SignedAngle(baseVector, angledVector - steeringWheelCenter.position, steeringWheelCenter.up);
 
                                 if (turning < 0) turning += 360;
                                 if (turning > maxTurn && turning < 360 - maxTurn)
@@ -160,7 +167,7 @@ public class Vehicle : MonoBehaviour
                                 }
 
                                 Vector3 rot = steeringWheel.transform.localEulerAngles;
-                                steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, rot.y, -turning * 10f);
+                                steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, rot.y, -turning);
                             }
                             break;
                         case GrabPoint.GrabType.GearShift:
@@ -436,9 +443,6 @@ public class Vehicle : MonoBehaviour
             SpeedUI.text = (newSpeed * 1.5f).ToString("0.0#");
         }
     }
-
-    float prevSpeed = 0;
-    List<(Vector3 pos, float time)> clockedSpeed = new List<(Vector3, float)>();
 
     private void UpdateRadioUI()
     {
