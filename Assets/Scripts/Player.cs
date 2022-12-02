@@ -107,7 +107,7 @@ public class Player : MonoBehaviour
             }
         }
         else
-            car.UpdateVehicle(this, Time.deltaTime);
+            car.UpdateVehicle(Time.deltaTime);
 
 
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool leftGripped))

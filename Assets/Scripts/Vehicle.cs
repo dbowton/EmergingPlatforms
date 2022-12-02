@@ -27,17 +27,17 @@ public class Vehicle : MonoBehaviour
     [HideInInspector] public bool isOn = false;
 
     public float baseSpeed = 5f;
-    public float turnMulti = 18f;
+//    public float turnMulti = 18f;
 
     float speed = 0;
-
 
     private int targetGear = 0;
     private float currentGear = 0;
     private float gearPenaltyMulti = 1;
 
-    float turnAmount = 0;
-    readonly float maxTurn = 10f;
+    float turning = 0;
+
+    readonly float maxTurn = 40f;
     readonly float volumeChange = 0.2f;
     readonly float vehicleGrabRange = 0.0625f;
 
@@ -64,6 +64,7 @@ public class Vehicle : MonoBehaviour
         }
 
         controller.centerOfMass -= Vector3.up;
+        defaultSteeringRotation = steeringWheel.transform.localEulerAngles;
 
         UpdateGearUI();
         UpdateRadioUI();
@@ -72,7 +73,7 @@ public class Vehicle : MonoBehaviour
     private void Update()
     {
         if(clock)
-            clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute;
+            clock.text = DateTime.Now.Hour + ":" + DateTime.Now.Minute + "\n" + turning;
 
         if(engineIdleSound && engineSoundsQueued && !engineSound.isPlaying)
         {
@@ -91,12 +92,18 @@ public class Vehicle : MonoBehaviour
         }
 
         foreach (var wheel in steeringWheels)
-            wheel.steerAngle = turnAmount * 90f;
+            wheel.steerAngle = turning;
     }
 
     bool ebraking = false;
 
-    public void UpdateVehicle(Player player, float dt)
+    Vector3 defaultSteeringRotation;
+
+    [SerializeField] LineRenderer line1;
+    [SerializeField] LineRenderer line2;
+    [SerializeField] LineRenderer line3;
+
+    public void UpdateVehicle(float dt)
     {
         ebraking = false;
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrab))
@@ -286,17 +293,22 @@ public class Vehicle : MonoBehaviour
                 }
                 else
                 {
+                    Vector3 baseVector = ControllerManager.leftController.HeldObject.transform.position - steeringWheelCenter.position;
+                    Vector3 angledVector = ControllerManager.LeftHandPos - steeringWheelCenter.position;
 
-                    float leftDistance = Vector3.Distance(ControllerManager.leftController.HeldObject.GetComponent<GrabPoint>().Extreme1.transform.position, ControllerManager.LeftHandPos);
-                    float rightDistance = Vector3.Distance(ControllerManager.leftController.HeldObject.GetComponent<GrabPoint>().Extreme2.transform.position, ControllerManager.LeftHandPos);
+                    angledVector = steeringWheelCenter.position + Vector3.ProjectOnPlane(angledVector, steeringWheelCenter.up);
+                    turning = Vector3.SignedAngle(baseVector, angledVector - steeringWheelCenter.position, steeringWheelCenter.up) * 0.5f;
 
-                    float totalDistance = rightDistance - leftDistance;
-                    turnAmount = -(maxTurn * totalDistance * Time.deltaTime);
+
+
+                    Vector3 rot = steeringWheel.transform.localEulerAngles;
+                    steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, rot.y, -turning * 2f);
                 }
             }
             else
             {
-                turnAmount = 0;
+                steeringWheel.transform.localRotation = Quaternion.Euler(defaultSteeringRotation);
+                turning = 0;
                 if (ControllerManager.leftController.HeldObject)
                 {
                     ControllerManager.leftController.HeldObject.GetComponent<Renderer>().material.color = Color.white;
@@ -312,28 +324,10 @@ public class Vehicle : MonoBehaviour
         
         UpdateGearUI(dt);
 
-        Vector3 rot = steeringWheel.transform.localEulerAngles;
-
-        if(Mathf.Abs(steeringRotAxii.x) == 1)
-        {
-            if (rot.x > 180) rot.x -= 360;
-            rot.x = Mathf.Lerp(rot.x, -turnAmount * 90 * turnMulti * steeringRotAxii.x, 0.8f);
-        }
-        else if (Mathf.Abs(steeringRotAxii.y) == 1)
-        {
-            if (rot.y > 180) rot.y -= 360;
-            rot.y = Mathf.Lerp(rot.y, -turnAmount * 90 * turnMulti * steeringRotAxii.y, 0.8f);
-        }
-        else if (Mathf.Abs(steeringRotAxii.z * steeringRotAxii.z) == 1)
-        {
-            if (rot.z > 180) rot.z -= 360;
-            rot.z = Mathf.Lerp(rot.z, -turnAmount * 90 * turnMulti, 0.8f);
-        }
-
-        steeringWheel.transform.localEulerAngles = rot;
         speed = baseSpeed * currentGear * gearPenaltyMulti * ((currentGear < 0) ? 2 : 1);
     }
 
+    [SerializeField] Transform steeringWheelCenter;
     [SerializeField] Vector3 steeringRotAxii;
 
     public void TurnOff()
