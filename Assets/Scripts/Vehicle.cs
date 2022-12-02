@@ -63,7 +63,6 @@ public class Vehicle : MonoBehaviour
     float prevSpeed = 0;
     List<(Vector3 pos, float time)> clockedSpeed = new List<(Vector3, float)>();
 
-
     private void Start()
     {
         if (RadioStation.instance.songs.Count > 0)
