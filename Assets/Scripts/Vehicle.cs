@@ -436,8 +436,8 @@ public class Vehicle : MonoBehaviour
         if (clock) clock.enabled = true;
         if (radioName) radioName.enabled = true;
         if (volumeLevel) volumeLevel.enabled = true;
-        if (SpeedUI) SpeedUI.enabled = true;
         if (GearUI) GearUI.enabled = true;
+        if (SpeedUI) SpeedUI.enabled = true;
                 
         UpdateGearUI();
         UpdateRadioUI();
