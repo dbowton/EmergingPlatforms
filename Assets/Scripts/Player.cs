@@ -35,6 +35,9 @@ public class Player : MonoBehaviour
     Vehicle spawnedVehicle;
 
     public float playerGrabRange = 0.0625f;
+
+    public bool canOpenDoor = true;
+
     private void Update()
     {
         if (car == null)
@@ -111,13 +114,17 @@ public class Player : MonoBehaviour
             car.UpdateVehicle(Time.deltaTime);
 
 
-        if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool leftGripped))
+        if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrip))
         {
-            if (!canChangeCar && !leftGripped)
+            if (!rightGrip) canOpenDoor = true;
+            if (!canChangeCar && !rightGrip)
                 canChangeCar = true;
-            else if (canChangeCar && leftGripped)
+            else if (canChangeCar && rightGrip)
             {
-                List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, playerGrabRange).ToList().Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && (grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleEntry) || grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleStart))).ToList();
+                List<Collider> grabbableObjects = Physics.OverlapSphere(ControllerManager.RightHandPos, playerGrabRange)
+                    .Where(x => x.TryGetComponent<GrabPoint>(out GrabPoint grabPoint) && 
+                        (grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleEntry) || grabPoint.grabType.Equals(GrabPoint.GrabType.VehicleStart)))
+                    .OrderBy(x => Vector3.Distance(x.transform.position, ControllerManager.RightHandPos)).ToList();
 
                 if (grabbableObjects.Count > 0)
                 {
@@ -137,15 +144,24 @@ public class Player : MonoBehaviour
                     {
                         foreach (var grab in grabbableObjects)
                         {
-                            if (grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleStart) && grab.gameObject.transform.parent.TryGetComponent<Vehicle>(out Vehicle newVehicle))
+                            if(grab.gameObject.transform.parent.TryGetComponent<Vehicle>(out Vehicle workingVehicle))
                             {
-                                car = newVehicle;
-                                transform.parent = car.seatPosition;
-                                transform.position = car.seatPosition.position;
-                                controller.enabled = false;
-                                canChangeCar = false;
-                                car.TurnOn();
-                                break;
+                                if(canOpenDoor && grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleEntry))
+                                {
+                                    workingVehicle.OperateDoor();
+                                    canOpenDoor = false;
+                                }
+                                else if (grabbableObjects[0].GetComponent<GrabPoint>().grabType.Equals(GrabPoint.GrabType.VehicleStart))
+                                {
+                                    car = workingVehicle;
+                                    transform.parent = car.seatPosition;
+                                    transform.position = car.seatPosition.position;
+                                    controller.enabled = false;
+                                    canChangeCar = false;
+                                    car.TurnOn();
+                                    break;
+                                }
+
                             }
                         }
                     }

@@ -3,7 +3,12 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Body
+  - Accent1
+  - Accent2
+  - Other
+  - Tire
   layers:
   - Default
   - TransparentFX

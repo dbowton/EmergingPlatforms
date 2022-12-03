@@ -9,6 +9,19 @@ using VRButton = UnityEngine.XR.CommonUsages;
 
 public class Vehicle : MonoBehaviour
 {
+    [SerializeField] bool ToggleDoor = false;
+
+    private void OnValidate()
+    {
+        if (ToggleDoor)
+        {
+            OperateDoor();
+            ToggleDoor = false;
+        }
+    }
+
+    [SerializeField] VehicleColorChanger vehicleColor;
+
     public Transform seatPosition;
     [SerializeField] TMPro.TMP_Text clock;
     [SerializeField] TMPro.TMP_Text radioName;
@@ -65,7 +78,13 @@ public class Vehicle : MonoBehaviour
 
     private void Start()
     {
-        if (RadioStation.instance.songs.Count > 0)
+        if (clock) clock.enabled = false;
+        if (radioName) radioName.enabled = false;
+        if (volumeLevel) volumeLevel.enabled = false;
+        if (SpeedUI) SpeedUI.enabled = false;
+        if (GearUI) GearUI.enabled = false;
+
+        if (RadioStation.instance != null && RadioStation.instance.songs.Count > 0)
         {
             songIndex = UnityEngine.Random.Range(0, RadioStation.instance.songs.Count);
             foreach (var speaker in radioSpeakers)
@@ -124,6 +143,16 @@ public class Vehicle : MonoBehaviour
         speed = baseSpeed * currentGear * ((currentGear < 0) ? 4 : 1);
     }
 
+    [SerializeField] GameObject carDoor;
+    [SerializeField] float doorOpenAmount;
+    bool doorIsOpen = false;
+
+    public void OperateDoor()
+    {
+        carDoor.transform.localRotation *= Quaternion.Euler((!doorIsOpen ? doorOpenAmount : -doorOpenAmount) * Vector3.up);
+        doorIsOpen = !doorIsOpen;
+    }
+
     private void UpdateController((InputDevice input, ControllerInitializer controller, Vector3 position) current, (InputDevice input, ControllerInitializer controller, Vector3 position) other)
     {
         if (current.input.GetControllerPressed(VRButton.gripButton, out bool grabbed))
@@ -167,7 +196,14 @@ public class Vehicle : MonoBehaviour
                                 }
 
                                 Vector3 rot = steeringWheel.transform.localEulerAngles;
-                                steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, rot.y, -turning);
+
+                                if(steeringRotAxii.x == 1)
+                                    steeringWheel.transform.localRotation = Quaternion.Euler(turning, rot.y, rot.z);
+                                if (steeringRotAxii.y == 1)
+                                    steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, turning, rot.z);
+                                if (steeringRotAxii.z == 1)
+                                    steeringWheel.transform.localRotation = Quaternion.Euler(rot.x, rot.y, turning);
+
                             }
                             break;
                         case GrabPoint.GrabType.GearShift:
@@ -374,9 +410,12 @@ public class Vehicle : MonoBehaviour
         UpdateRadioUI();
         UpdateGearUI();
 
-        if(clock) clock.color = Color.black;
-        if(SpeedUI) SpeedUI.color = Color.black;
-        if(GearUI) GearUI.color = Color.black;
+        if (clock) clock.enabled = false;
+        if (radioName) radioName.enabled = false;
+        if (volumeLevel) volumeLevel.enabled = false;
+        if (SpeedUI) SpeedUI.enabled = false;
+        if (GearUI) GearUI.enabled = false;
+
 
         engineSound.Stop();
         engineSoundsQueued = false;
@@ -394,8 +433,12 @@ public class Vehicle : MonoBehaviour
     {
         isOn = true;
 
-        if(clock) clock.color = Color.white;
-        if(SpeedUI) SpeedUI.color = Color.white;
+        if (clock) clock.enabled = true;
+        if (radioName) radioName.enabled = true;
+        if (volumeLevel) volumeLevel.enabled = true;
+        if (SpeedUI) SpeedUI.enabled = true;
+        if (GearUI) GearUI.enabled = true;
+                
         UpdateGearUI();
         UpdateRadioUI();
 
@@ -446,28 +489,37 @@ public class Vehicle : MonoBehaviour
 
     private void UpdateRadioUI()
     {
-        if(radioName) radioName.text = RadioStation.instance.songs[songIndex].name;
-
-        if (radioSpeakers.Count > 0)
+        if (RadioStation.instance != null && RadioStation.instance.songs.Count > 0 && radioSpeakers.Count > 0)
         {
-            string volumeText = (radioSpeakers[0].volume * 100) + "%";
-            Color volumeColor;
-            if (radioSpeakers[0].volume == 0) volumeColor = Color.black;
-            else
+            if (volumeLevel || radioName)
             {
-                Color minColor = Color.red;
-                Color maxColor = Color.white;
+                if (radioSpeakers[0].volume == 0 || !isOn)
+                {
+                    if (volumeLevel) volumeLevel.enabled = false;
+                    if (radioName) radioName.enabled = false;
+                }
+                else
+                {
+                    Color minColor = Color.red;
+                    Color maxColor = Color.white;
 
-                minColor *= 1 - radioSpeakers[0].volume;
-                maxColor *= radioSpeakers[0].volume;
+                    minColor *= 1 - radioSpeakers[0].volume;
+                    maxColor *= radioSpeakers[0].volume;
 
-                volumeColor = minColor + maxColor;
+                    if (volumeLevel)
+                    {
+                        volumeLevel.enabled = true;
+                        volumeLevel.text = (radioSpeakers[0].volume * 100) + "%";
+                        volumeLevel.color = minColor + maxColor;
+                    }
+
+                    if (radioName)
+                    {
+                        radioName.enabled = true;
+                        radioName.text = "< " + RadioStation.instance.songs[songIndex].name + " >";
+                    }
+                }
             }
-
-            if(radioName) radioName.color = (radioSpeakers[0].volume == 0) ? Color.black : Color.white;
-
-            if(volumeLevel) volumeLevel.text = volumeText;
-            if(volumeLevel) volumeLevel.color = volumeColor;
         }
     }
 }

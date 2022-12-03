@@ -5170,6 +5170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d690b49dce06ba4daeec5a04b632b1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vehicleColor: {fileID: 0}
   seatPosition: {fileID: 3125606269178050345}
   clock: {fileID: 3125606268281462376}
   radioName: {fileID: 3125606267940252740}
@@ -5198,6 +5199,8 @@ MonoBehaviour:
   steeringWheelCenter: {fileID: 7390528993954267369}
   steeringRotAxii: {x: 0, y: 0, z: 1}
   turnMulti: 0.25
+  carDoor: {fileID: 0}
+  doorOpenAmount: 0
 --- !u!82 &3129791132182741249
 AudioSource:
   m_ObjectHideFlags: 0
