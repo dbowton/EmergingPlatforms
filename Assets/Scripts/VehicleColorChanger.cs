@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class VehicleColorChanger : MonoBehaviour
@@ -7,20 +5,18 @@ public class VehicleColorChanger : MonoBehaviour
     [SerializeField] bool update = false;
 
     [SerializeField] Material bodyMat;
-    [SerializeField] Material primaryAccentMat;
-    [SerializeField] Material secondaryAccentMat;
+    [SerializeField] Material accentMat;
     [SerializeField] Material tireMat;
 
     [SerializeField] Color bodyColor;
-    [SerializeField] Color primaryAccentColor;
-    [SerializeField] Color secondaryAccentColor;
+    [SerializeField] Color accentColor;
     [SerializeField] Color tireColor;
 
     private void OnValidate()
     {
         if (update)
         {
-            UpdateColors(bodyColor, primaryAccentColor, secondaryAccentColor);
+            UpdateColors(bodyColor, accentColor);
             update = false;
 
             foreach (var renderer in transform.GetComponentsInChildren(typeof(Renderer), true))
@@ -31,11 +27,7 @@ public class VehicleColorChanger : MonoBehaviour
                 }
                 else if (renderer.CompareTag("Accent1"))
                 {
-                    (renderer as Renderer).material = primaryAccentMat;
-                }
-                else if (renderer.CompareTag("Accent2"))
-                {
-                    (renderer as Renderer).material = secondaryAccentMat;
+                    (renderer as Renderer).material = accentMat;
                 }
                 else if (renderer.CompareTag("Tire"))
                     (renderer as Renderer).material = tireMat;
@@ -43,11 +35,10 @@ public class VehicleColorChanger : MonoBehaviour
         }
     }
 
-    public void UpdateColors(Color newBodyColor, Color newAccentColor, Color newSecondaryAccentColor)
+    public void UpdateColors(Color newBodyColor, Color newAccentColor)
     {
         bodyMat.color = newBodyColor;
-        primaryAccentMat.color = newAccentColor;
-        secondaryAccentMat.color = newSecondaryAccentColor;
+        accentMat.color = newAccentColor;
         tireMat.color = tireColor;
     }
 }

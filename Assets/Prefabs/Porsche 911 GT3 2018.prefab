@@ -3781,7 +3781,7 @@ GameObject:
   - component: {fileID: 2853245481548652388}
   m_Layer: 8
   m_Name: polySurface82
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3829,7 +3829,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5108,13 +5108,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   update: 0
   bodyMat: {fileID: 2100000, guid: 7aaa2f946add7444c98f95af14a917e8, type: 2}
-  primaryAccentMat: {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
-  secondaryAccentMat: {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  accentMat: {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   tireMat: {fileID: 2100000, guid: 4b1209b0929ea0642bd68016377657a3, type: 2}
-  bodyColor: {r: 0.8661001, g: 0.8862745, b: 0.1960784, a: 0}
-  primaryAccentColor: {r: 0.8301887, g: 0.121395506, b: 0.6974252, a: 0}
-  secondaryAccentColor: {r: 0.32010904, g: 0.7924528, b: 0.13830544, a: 0}
-  tireColor: {r: 0.14222142, g: 0.6415094, b: 0.34056866, a: 0}
+  bodyColor: {r: 0.509434, g: 0.44407263, b: 0.44407263, a: 0}
+  accentColor: {r: 0, g: 0, b: 0, a: 0}
+  tireColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &1890619815017590705
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5316,7 +5314,7 @@ GameObject:
   - component: {fileID: 1322399397337027880}
   m_Layer: 8
   m_Name: rightbackLightCover
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5364,7 +5362,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5866,7 +5864,7 @@ GameObject:
   - component: {fileID: 2669711081811556320}
   m_Layer: 8
   m_Name: turnSignals
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5914,7 +5912,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7207,7 +7205,7 @@ GameObject:
   - component: {fileID: 2987230372446843222}
   m_Layer: 8
   m_Name: Grilles
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7255,7 +7253,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7290,7 +7288,7 @@ GameObject:
   - component: {fileID: 2987230372446843224}
   m_Layer: 8
   m_Name: Interrior_Red
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7338,7 +7336,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7945,7 +7943,7 @@ GameObject:
   - component: {fileID: 2987230372446843308}
   m_Layer: 8
   m_Name: Seams
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7993,7 +7991,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8099,7 +8097,7 @@ GameObject:
   - component: {fileID: 2987230372446843316}
   m_Layer: 8
   m_Name: Wing
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8147,7 +8145,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8182,7 +8180,7 @@ GameObject:
   - component: {fileID: 5855797315067766619}
   m_Layer: 8
   m_Name: headLightTips
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8230,7 +8228,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8348,7 +8346,7 @@ GameObject:
   - component: {fileID: 150681838410420884}
   m_Layer: 8
   m_Name: rearLightspacing
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8396,7 +8394,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8763,7 +8761,7 @@ GameObject:
   - component: {fileID: 6298332021576396006}
   m_Layer: 8
   m_Name: headLightTips
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8811,7 +8809,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10520,7 +10518,7 @@ GameObject:
   - component: {fileID: 7614435585558191183}
   m_Layer: 8
   m_Name: driverDoorWindowConnector
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10568,7 +10566,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11141,7 +11139,7 @@ GameObject:
   - component: {fileID: 7696557432157841961}
   m_Layer: 8
   m_Name: frontHoodExhaust
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11189,7 +11187,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11442,7 +11440,7 @@ GameObject:
   - component: {fileID: 4427180153484494910}
   m_Layer: 8
   m_Name: leftBackLightCover
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11490,7 +11488,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11836,7 +11834,7 @@ GameObject:
   - component: {fileID: 6710592078405316184}
   m_Layer: 8
   m_Name: rearLightspacing
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11884,7 +11882,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -12002,7 +12000,7 @@ GameObject:
   - component: {fileID: 808844953690734205}
   m_Layer: 8
   m_Name: turnSignals
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12050,7 +12048,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -12420,7 +12418,7 @@ GameObject:
   - component: {fileID: 4573274079816236377}
   m_Layer: 8
   m_Name: polySurface79
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12468,7 +12466,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -13366,7 +13364,7 @@ GameObject:
   - component: {fileID: 6589448512603898532}
   m_Layer: 8
   m_Name: driverStaticDoorConnector
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13414,7 +13412,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -13449,7 +13447,7 @@ GameObject:
   - component: {fileID: 4067753113353637491}
   m_Layer: 8
   m_Name: turnSignals
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13497,7 +13495,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -15248,7 +15246,7 @@ GameObject:
   - component: {fileID: 3614022952121384836}
   m_Layer: 8
   m_Name: turnSignals
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -15296,7 +15294,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -15945,7 +15943,7 @@ GameObject:
   - component: {fileID: 6123769985339131406}
   m_Layer: 8
   m_Name: passengerWindowConnector
-  m_TagString: Accent2
+  m_TagString: Accent1
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -15993,7 +15991,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e4a454bb322456a498b473f5c7145805, type: 2}
+  - {fileID: 2100000, guid: 2e2f217c83e8bae4ead372e6680a0198, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
