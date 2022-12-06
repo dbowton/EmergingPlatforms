@@ -11,9 +11,10 @@ public class ColorChangerUI : MonoBehaviour
 
     [SerializeField] private Image _color;
 
+    public Color Color { get { return new Color(_sliderR.value, _sliderG.value, _sliderB.value); } }
+
     public void OnColorUpdated()
     {
-        Color c = new Color(_sliderR.value, _sliderG.value, _sliderB.value);
-        _color.color = c;
+        _color.color = Color;
     }
 }

@@ -17,10 +17,7 @@ public class Player : MonoBehaviour
     [SerializeField] float spawnDistance = 2f;
 
     private void Start()
-    {
-        /*        ControllerManager.leftController.controllerObject.SetActive(false);
-                ControllerManager.rightController.controllerObject.SetActive(false);*/
-
+    {        
         vehicleMenu.enableAutoSizing = true;
         vehicleMenu.enabled = false;
     }
@@ -56,7 +53,10 @@ public class Player : MonoBehaviour
                 controller.SimpleMove(speed * Time.deltaTime * ((adjusedForward * dir.y) + (dir.x * adjusedRight)));
             }
             else
+            {
                 controller.SimpleMove(Vector3.down);
+                if (Physics.Raycast(ControllerManager.RightHandPos, ControllerManager.rightController.controllerObject.transform.forward, out _, 4)) { }
+            }
 
             if(!vehicleMenu.enabled)
             {
