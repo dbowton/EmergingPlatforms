@@ -433,6 +433,8 @@ public class Vehicle : MonoBehaviour
     {
         isOn = true;
 
+        if (doorIsOpen) OperateDoor();
+
         if (clock) clock.enabled = true;
         if (radioName) radioName.enabled = true;
         if (volumeLevel) volumeLevel.enabled = true;

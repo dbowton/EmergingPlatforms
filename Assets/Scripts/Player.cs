@@ -291,8 +291,6 @@ public class Player : MonoBehaviour
         }
         else prevPressed = false;
 
-
-
         if (car == null)
         {
             transform.localEulerAngles = Vector3.up * transform.localEulerAngles.y;
@@ -315,7 +313,6 @@ public class Player : MonoBehaviour
         }
         else
             car.UpdateVehicle(Time.deltaTime);
-
 
         if (ControllerManager.rightInput.GetControllerPressed(VRButton.gripButton, out bool rightGrip))
         {
